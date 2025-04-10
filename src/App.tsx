@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import Chat from "./pages/Chat";
 import SocialIntegrations from "./pages/SocialIntegrations";
 import NotFound from "./pages/NotFound";
+import DesignDetails from "./pages/DesignDetails";
 import { StrictMode } from "react";
 
 // إنشاء مثيل جديد من QueryClient
@@ -37,6 +38,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/designs" element={<Designs />} />
+              <Route path="/design-details/:id" element={<DesignDetails />} />
               <Route path="/add-design" element={<AddDesign />} />
               <Route path="/add-post" element={<AddPost />} />
               <Route path="/add-client" element={<AddClient />} />

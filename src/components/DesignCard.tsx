@@ -61,9 +61,12 @@ const DesignCard = ({ design, viewMode, onStatusChange }: DesignCardProps) => {
     console.log("عرض التصميم:", design.title);
     toast.info(`عرض تفاصيل التصميم: ${design.title}`);
     
-    // In a real app, we would navigate to the design detail page
-    // For now, we'll simulate navigation by showing a toast
-    toast.success(`تم الانتقال إلى صفحة عرض التصميم: ${design.title}`);
+    // تنقل إلى صفحة تفاصيل التصميم (سنستخدم مسار وهمي للتوضيح حتى يتم إنشاء الصفحة الفعلية)
+    navigate(`/design-details/${design.id}`, { 
+      state: { 
+        design: design 
+      }
+    });
   };
   
   const handleMore = (e: React.MouseEvent) => {
