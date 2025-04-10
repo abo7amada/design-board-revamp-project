@@ -392,10 +392,13 @@ const CalendarPage = () => {
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-2">
-                <TabsList>
-                  <TabsTrigger value="month" onClick={() => setViewMode("month")} className={viewMode === "month" ? "bg-primary text-white" : ""}>شهري</TabsTrigger>
-                  <TabsTrigger value="week" onClick={() => setViewMode("week")} className={viewMode === "week" ? "bg-primary text-white" : ""}>أسبوعي</TabsTrigger>
-                </TabsList>
+                {/* Fix: Wrapping TabsList inside Tabs component */}
+                <Tabs defaultValue="month">
+                  <TabsList>
+                    <TabsTrigger value="month" onClick={() => setViewMode("month")} className={viewMode === "month" ? "bg-primary text-white" : ""}>شهري</TabsTrigger>
+                    <TabsTrigger value="week" onClick={() => setViewMode("week")} className={viewMode === "week" ? "bg-primary text-white" : ""}>أسبوعي</TabsTrigger>
+                  </TabsList>
+                </Tabs>
                 
                 <Select value={platformFilter || ""} onValueChange={(value) => setPlatformFilter(value || null)}>
                   <SelectTrigger className="w-[180px]">
