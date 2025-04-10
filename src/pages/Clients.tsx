@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { clientsData } from "@/data/clients-data";
@@ -16,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { ClientCalendar } from "@/components/client/ClientCalendar";
+import { ClientStatistics } from "@/components/client/ClientStatistics";
 
 // بيانات افتراضية للتصاميم
 const designsData = [
@@ -131,6 +132,10 @@ const Clients = () => {
       setActiveTab("designs");
     } else if (location.pathname.includes('/posts')) {
       setActiveTab("posts");
+    } else if (location.pathname.includes('/calendar')) {
+      setActiveTab("calendar");
+    } else if (location.pathname.includes('/statistics')) {
+      setActiveTab("statistics");
     } else if (clientId) {
       setActiveTab("clients");
     }
@@ -248,12 +253,18 @@ const Clients = () => {
                   navigate(`/clients/${clientId}/designs`);
                 } else if (tab === "posts") {
                   navigate(`/clients/${clientId}/posts`);
+                } else if (tab === "calendar") {
+                  navigate(`/clients/${clientId}/calendar`);
+                } else if (tab === "statistics") {
+                  navigate(`/clients/${clientId}/statistics`);
                 }
               }} className="w-full">
                 <TabsList className="w-full mb-6">
                   <TabsTrigger value="clients" className="flex-1">معلومات العميل</TabsTrigger>
                   <TabsTrigger value="designs" className="flex-1">التصاميم</TabsTrigger>
                   <TabsTrigger value="posts" className="flex-1">المنشورات</TabsTrigger>
+                  <TabsTrigger value="calendar" className="flex-1">التقويم</TabsTrigger>
+                  <TabsTrigger value="statistics" className="flex-1">الإحصائيات</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="clients">
@@ -484,6 +495,42 @@ const Clients = () => {
                     </div>
                   </div>
                 </TabsContent>
+
+                <TabsContent value="calendar">
+                  <div className="mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                      <h2 className="text-2xl font-bold mb-4 md:mb-0">
+                        تقويم نشاطات {currentClient?.name}
+                      </h2>
+                    </div>
+                    
+                    {currentClient && (
+                      <ClientCalendar 
+                        clientId={currentClient.id} 
+                        postsData={postsData} 
+                        designsData={designsData} 
+                      />
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="statistics">
+                  <div className="mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                      <h2 className="text-2xl font-bold mb-4 md:mb-0">
+                        إحصائيات {currentClient?.name}
+                      </h2>
+                    </div>
+                    
+                    {currentClient && (
+                      <ClientStatistics 
+                        clientId={currentClient.id} 
+                        postsData={postsData} 
+                        designsData={designsData} 
+                      />
+                    )}
+                  </div>
+                </TabsContent>
               </Tabs>
             ) : (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -682,22 +729,4 @@ const Clients = () => {
                           <Button 
                             variant="link" 
                             className="mt-4 text-green-600"
-                            onClick={() => navigate("/add-post")}
-                          >
-                            إضافة منشور جديد
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            )}
-          </div>
-        </main>
-      </SidebarProvider>
-    </div>
-  );
-};
-
-export default Clients;
+                            onClick={() =>

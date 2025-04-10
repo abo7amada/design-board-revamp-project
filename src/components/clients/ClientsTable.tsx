@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Edit, Mail, Phone, Trash2, User, PencilRuler, LayoutGrid } from "lucide-react";
+import { Edit, Mail, Phone, Trash2, User, PencilRuler, LayoutGrid, Calendar, BarChart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { clientsData } from "@/data/clients-data";
 import { ClientForm } from "./ClientForm";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface ClientsTableProps {
   filteredClients: typeof clientsData;
@@ -30,6 +30,7 @@ interface ClientsTableProps {
 
 export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
   const [clients, setClients] = useState(filteredClients);
+  const navigate = useNavigate();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -53,6 +54,10 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
     );
   };
 
+  const handleClientClick = (clientId: number) => {
+    navigate(`/clients/${clientId}`);
+  };
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -72,7 +77,7 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
           <TableBody>
             {clients.length > 0 ? (
               clients.map((client) => (
-                <TableRow key={client.id} onClick={() => toast.info(`تم النقر على العميل: ${client.name}`)}>
+                <TableRow key={client.id} onClick={() => handleClientClick(client.id)}>
                   <TableCell>
                     <div className="flex items-center">
                       <Link to={`/clients/${client.id}`} className="flex items-center" onClick={(e) => e.stopPropagation()}>
@@ -104,35 +109,67 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
                   <TableCell>{client.lastActivity}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      <Link 
-                        to={`/clients/${client.id}/designs`} 
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
                         className="bg-purple-100 text-purple-700 px-2 py-1 rounded-md flex items-center gap-1 text-sm hover:bg-purple-200"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/clients/${client.id}/designs`);
+                        }}
                       >
                         <PencilRuler className="h-3 w-3" />
                         <span>التصاميم</span>
-                      </Link>
-                      <Link 
-                        to={`/clients/${client.id}/posts`} 
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
                         className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md flex items-center gap-1 text-sm hover:bg-blue-200"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/clients/${client.id}/posts`);
+                        }}
                       >
                         <LayoutGrid className="h-3 w-3" />
                         <span>المنشورات</span>
-                      </Link>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md flex items-center gap-1 text-sm hover:bg-orange-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/clients/${client.id}/calendar`);
+                        }}
+                      >
+                        <Calendar className="h-3 w-3" />
+                        <span>التقويم</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="bg-green-100 text-green-700 px-2 py-1 rounded-md flex items-center gap-1 text-sm hover:bg-green-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/clients/${client.id}/statistics`);
+                        }}
+                      >
+                        <BarChart className="h-3 w-3" />
+                        <span>الإحصائيات</span>
+                      </Button>
                     </div>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                           <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
                             <path d="M3.625 7.5C3.625 8.12132 3.12132 8.625 2.5 8.625C1.87868 8.625 1.375 8.12132 1.375 7.5C1.375 6.87868 1.87868 6.375 2.5 6.375C3.12132 6.375 3.625 6.87868 3.625 7.5ZM8.625 7.5C8.625 8.12132 8.12132 8.625 7.5 8.625C6.87868 8.625 6.375 8.12132 6.375 7.5C6.375 6.87868 6.87868 6.375 7.5 6.375C8.12132 6.375 8.625 6.87868 8.625 7.5ZM13.625 7.5C13.625 8.12132 13.1213 8.625 12.5 8.625C11.8787 8.625 11.375 8.12132 11.375 7.5C11.375 6.87868 11.8787 6.375 12.5 6.375C13.1213 6.375 13.625 6.87868 13.625 7.5Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
                           </svg>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => toast.info(`عرض العميل: ${client.name}`)}>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}`)}>
                           عرض البيانات
                         </DropdownMenuItem>
                         <DropdownMenuItem 
