@@ -54,7 +54,8 @@ export const postsData = [
     clientId: 1,
     date: "2023/05/05",
     author: "شركة الوفق الأصفر",
-    hasDesign: true
+    hasDesign: true,
+    content: "نحن متحمسون للإعلان عن إطلاق منتجنا الجديد! ترقبوا المزيد من التفاصيل قريبًا."
   },
   {
     id: 2,
@@ -69,7 +70,8 @@ export const postsData = [
     clientId: 1,
     date: "2023/06/10",
     author: "شركة الوفق الأصفر",
-    hasDesign: true
+    hasDesign: true,
+    content: "نتشرف بدعوتكم لحضور ورشة العمل التقنية القادمة. سجل الآن لتأمين مقعدك!"
   },
   {
     id: 3,
@@ -84,7 +86,8 @@ export const postsData = [
     clientId: 2,
     date: "2023/04/10",
     author: "مؤسسة نجمة الشمال",
-    hasDesign: false
+    hasDesign: false,
+    content: "كل عام وأنتم بخير بمناسبة قدوم عيد الفطر المبارك. تقبل الله منا ومنكم صالح الأعمال."
   }
 ];
 

@@ -13,9 +13,26 @@ interface SocialPlatformPreviewProps {
   clientName?: string;
 }
 
+interface PostType {
+  id: number;
+  title: string;
+  status: string;
+  platform: string;
+  scheduledDate: string;
+  image: string | null;
+  likes: number;
+  comments: number;
+  shares: number;
+  clientId: number;
+  date: string;
+  author: string;
+  hasDesign: boolean;
+  content?: string;
+}
+
 export const SocialPlatformPreview = ({ platform, clientName }: SocialPlatformPreviewProps) => {
   const [newPost, setNewPost] = useState("");
-  const [posts, setPosts] = useState(postsData.filter(p => p.platform === platform));
+  const [posts, setPosts] = useState<PostType[]>(postsData.filter(p => p.platform === platform) as PostType[]);
   const [tab, setTab] = useState("feed");
   
   const handlePost = () => {
@@ -28,7 +45,7 @@ export const SocialPlatformPreview = ({ platform, clientName }: SocialPlatformPr
     toast.success("تم نشر المحتوى بنجاح على " + getPlatformName());
     
     // إضافة المنشور الجديد محليًا
-    const newPostObj = {
+    const newPostObj: PostType = {
       id: Date.now(),
       title: newPost.substring(0, 30) + (newPost.length > 30 ? "..." : ""),
       status: "منشور",

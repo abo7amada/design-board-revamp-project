@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Image, User, Share2 } from "lucide-react";
@@ -33,6 +34,7 @@ interface PostProps {
     comments?: number;
     shares?: number;
     clientId?: number;
+    content?: string; // Added content property
   };
 }
 
