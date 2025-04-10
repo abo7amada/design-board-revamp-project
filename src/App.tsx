@@ -16,7 +16,14 @@ import NotFound from "./pages/NotFound";
 import { StrictMode } from "react";
 
 // إنشاء مثيل جديد من QueryClient
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+});
 
 const App = () => (
   <StrictMode>
