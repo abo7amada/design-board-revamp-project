@@ -56,8 +56,10 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
     e.stopPropagation();
     console.log("عرض التصميم:", design.title);
     toast.info(`عرض تفاصيل التصميم: ${design.title}`);
-    // Here we would navigate to the design detail page in a real app
-    // navigate(`/designs/${design.id}`);
+    
+    // In a real app, we would navigate to the design detail page
+    // For now, we'll simulate navigation by showing a toast
+    toast.success(`تم الانتقال إلى صفحة عرض التصميم: ${design.title}`);
   };
   
   const handleMore = (e: React.MouseEvent) => {
@@ -79,7 +81,12 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
     e.stopPropagation();
     console.log("تعديل التصميم:", design.title);
     toast.success(`تعديل التصميم: ${design.title}`);
-    // Here we would navigate to the edit page in a real app
+    
+    // In a real app, we would navigate to the edit page
+    // For now, we'll simulate navigation by showing a toast
+    toast.success(`تم الانتقال إلى صفحة تحرير التصميم: ${design.title}`);
+    
+    // Example of what would happen in a full app:
     // navigate(`/edit-design/${design.id}`);
   };
   
