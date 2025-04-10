@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { ClientForm } from "@/components/clients/ClientForm";
+import { SocialMediaIntegration } from "@/components/social/SocialMediaIntegration";
 
 interface ClientInfoProps {
   currentClient: any;
@@ -40,6 +41,8 @@ export const ClientInfo = ({ currentClient }: ClientInfoProps) => {
             <p className="font-semibold">{currentClient?.lastActivity || "غير متوفر"}</p>
           </div>
         </div>
+        
+        <SocialMediaIntegration clientId={currentClient?.id} />
         
         <div className="mt-6 flex gap-4">
           <ClientForm 
