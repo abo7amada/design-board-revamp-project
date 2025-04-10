@@ -9,6 +9,7 @@ export const AppSidebar = () => {
 
   // دالة للتنقل بين الصفحات
   const handleNavigation = (path: string) => {
+    console.log("Navigating to:", path);
     navigate(path);
   };
 
@@ -40,7 +41,7 @@ export const AppSidebar = () => {
               <Button 
                 variant="link" 
                 className={`w-full justify-start gap-2 ${isActive("/posts") ? "text-green-700" : "text-gray-600 hover:text-green-700"}`} 
-                onClick={() => handleNavigation("/")}
+                onClick={() => handleNavigation("/posts")}
               >
                 <LayoutGrid className="h-5 w-5" />
                 <span className="text-lg">لوحة المنشورات</span>
