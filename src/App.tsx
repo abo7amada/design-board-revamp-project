@@ -13,30 +13,34 @@ import Statistics from "./pages/Statistics";
 import Clients from "./pages/Clients";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import { StrictMode } from "react";
 
+// إنشاء مثيل جديد من QueryClient
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/designs" element={<Designs />} />
-          <Route path="/add-design" element={<AddDesign />} />
-          <Route path="/add-post" element={<AddPost />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/settings" element={<Settings />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/designs" element={<Designs />} />
+            <Route path="/add-design" element={<AddDesign />} />
+            <Route path="/add-post" element={<AddPost />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/clients" element={<Clients />} />
+            <Route path="/settings" element={<Settings />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </StrictMode>
 );
 
 export default App;
