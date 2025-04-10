@@ -58,6 +58,7 @@ const Designs = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("الكل");
   const [selectedClient, setSelectedClient] = useState("كل العملاء");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const navigate = useNavigate();
   
   // تصفية التصاميم بناءً على البحث والفئة المحددة
@@ -106,6 +107,14 @@ const Designs = () => {
     navigate("/calendar");
   };
 
+  const toggleViewMode = () => {
+    setViewMode(viewMode === "grid" ? "list" : "grid");
+  };
+
+  useEffect(() => {
+    console.log("تم تحميل صفحة التصاميم");
+  }, []);
+
   return (
     <div className="min-h-screen flex" dir="rtl">
       {/* Sidebar */}
@@ -147,19 +156,19 @@ const Designs = () => {
                   </Button>
                 </li>
                 <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على الإحصائيات")}>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => navigate("/statistics")}>
                     <BarChart className="h-5 w-5" />
                     <span className="text-lg">الإحصائيات</span>
                   </Button>
                 </li>
                 <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على العملاء")}>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => navigate("/clients")}>
                     <Users className="h-5 w-5" />
                     <span className="text-lg">العملاء</span>
                   </Button>
                 </li>
                 <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على الإعدادات")}>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => navigate("/settings")}>
                     <Settings className="h-5 w-5" />
                     <span className="text-lg">الإعدادات</span>
                   </Button>
@@ -229,6 +238,24 @@ const Designs = () => {
                 <h2 className="text-2xl font-bold mb-4 md:mb-0">لوحة التصاميم</h2>
                 
                 <div className="flex flex-col md:flex-row gap-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-2" 
+                    onClick={toggleViewMode}
+                  >
+                    {viewMode === "grid" ? (
+                      <>
+                        <List className="h-4 w-4" />
+                        <span>عرض قائمة</span>
+                      </>
+                    ) : (
+                      <>
+                        <LayoutGrid className="h-4 w-4" />
+                        <span>عرض شبكة</span>
+                      </>
+                    )}
+                  </Button>
                   <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={handleAddDesign}>
                     <span>إضافة تصميم</span>
                     <Plus className="h-4 w-4" />
@@ -252,7 +279,7 @@ const Designs = () => {
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="كل العملاء" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="كل العملاء">كل العملاء</SelectItem>
                       <SelectItem value="شركة الوفق الأصفر">شركة الوفق الأصفر</SelectItem>
                       <SelectItem value="مؤسسة نجمة الشمال">مؤسسة نجمة الشمال</SelectItem>
@@ -263,7 +290,7 @@ const Designs = () => {
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="جميع الحالات" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="الكل">جميع الحالات</SelectItem>
                       <SelectItem value="معتمد">معتمد</SelectItem>
                       <SelectItem value="قيد المراجعة">قيد المراجعة</SelectItem>
@@ -292,62 +319,47 @@ const Designs = () => {
             </div>
             
             <div className="grid gap-6 grid-cols-1">
-              {filteredDesigns.length > 0 ? (
-                filteredDesigns.map(design => (
-                  <Card 
-                    key={design.id} 
-                    className={`${getStatusBackgroundColor(design.category)} rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md`}
-                    onClick={() => toast.info(`تم النقر على التصميم: ${design.title}`)}
-                  >
-                    <div className="flex flex-col md:flex-row border-b border-gray-100">
-                      <div className="md:w-1/4 p-6">
-                        <div className="bg-white h-48 rounded-md flex items-center justify-center shadow-sm">
-                          <img 
-                            src={design.image} 
-                            alt={design.title}
-                            className="w-full h-full object-cover rounded-md"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="p-6 md:w-3/4">
-                        <div className="flex flex-col h-full">
-                          <div className="mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className={`px-3 py-1 rounded-full text-sm ${getStatusBadgeColor(design.category)}`}>
-                                {design.category}
-                              </span>
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">{design.title}</h3>
-                            <div className="flex items-center gap-2 text-gray-600 text-sm">
-                              <Calendar className="h-4 w-4" />
-                              <span>{design.date}</span>
-                              <span className="mx-2">•</span>
-                              <span>{design.author}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex-grow">
-                            <p className="text-gray-600">{design.description}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))
+              {viewMode === "list" ? (
+                filteredDesigns.length > 0 ? (
+                  filteredDesigns.map(design => (
+                    <DesignCard key={design.id} design={design} viewMode="list" />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-gray-500 text-lg">لا توجد تصاميم متطابقة مع معايير البحث</p>
+                    <Button 
+                      variant="link" 
+                      className="mt-4 text-green-600"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSelectedCategory("الكل");
+                      }}
+                    >
+                      عرض جميع التصاميم
+                    </Button>
+                  </div>
+                )
               ) : (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-gray-500 text-lg">لا توجد تصاميم متطابقة مع معايير البحث</p>
-                  <Button 
-                    variant="link" 
-                    className="mt-4 text-green-600"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setSelectedCategory("الكل");
-                    }}
-                  >
-                    عرض جميع التصاميم
-                  </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredDesigns.length > 0 ? (
+                    filteredDesigns.map(design => (
+                      <DesignCard key={design.id} design={design} viewMode="grid" />
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-12">
+                      <p className="text-gray-500 text-lg">لا توجد تصاميم متطابقة مع معايير البحث</p>
+                      <Button 
+                        variant="link" 
+                        className="mt-4 text-green-600"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setSelectedCategory("الكل");
+                        }}
+                      >
+                        عرض جميع التصاميم
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

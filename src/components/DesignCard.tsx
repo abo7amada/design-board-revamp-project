@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Heart, MessageCircle, MoreHorizontal, Bookmark, Share2, Edit } from "lucide-react";
+import { Heart, MessageCircle, MoreHorizontal, Bookmark, Share2, Edit, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -54,6 +54,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   
   const handleView = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log("عرض التصميم:", design.title);
     toast.info(`عرض تفاصيل التصميم: ${design.title}`);
   };
   
@@ -68,10 +69,20 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   
   const handlePublish = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log("فتح نافذة النشر للتصميم:", design.title);
     setIsPublishModalOpen(true);
   };
   
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("تعديل التصميم:", design.title);
+    toast.info(`تعديل التصميم: ${design.title}`);
+    // يمكن إضافة التنقل إلى صفحة التعديل لاحقًا
+    // navigate(`/edit-design/${design.id}`);
+  };
+  
   const handleStatusChange = (newStatus: string) => {
+    console.log("تم تغيير حالة التصميم إلى:", newStatus);
     toast.success(`تم تغيير حالة التصميم إلى: ${newStatus}`);
   };
   
@@ -136,7 +147,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                       {design.category}
                     </p>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-40">
+                  <DropdownMenuContent className="w-40 bg-white">
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       handleStatusChange("معتمد");
@@ -168,10 +179,10 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                     <MoreHorizontal className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-white">
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
-                    toast.info("تحرير التصميم");
+                    handleEdit(e);
                   }}>
                     <Edit className="h-4 w-4 ml-2" />
                     تحرير
@@ -224,6 +235,10 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
               )}
               <Button variant="outline" size="sm" className="text-sm" onClick={handleView}>
                 عرض
+              </Button>
+              <Button variant="outline" size="sm" className="text-sm bg-blue-50 text-blue-600" onClick={handleEdit}>
+                <Pencil className="h-3 w-3 ml-1" />
+                تعديل
               </Button>
             </div>
           </CardFooter>
