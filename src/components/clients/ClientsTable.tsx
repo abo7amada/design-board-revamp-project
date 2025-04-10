@@ -21,12 +21,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { clientsData } from "@/data/clients-data";
+import { ClientForm } from "./ClientForm";
 
 interface ClientsTableProps {
   filteredClients: typeof clientsData;
 }
 
 export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
+  const [clients, setClients] = useState(filteredClients);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "نشط":
@@ -38,6 +41,15 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
       default:
         return <Badge className="bg-gray-600 hover:bg-gray-700">{status}</Badge>;
     }
+  };
+
+  const handleClientUpdate = (updatedClient: any) => {
+    // تحديث قائمة العملاء
+    setClients(prevClients => 
+      prevClients.map(client => 
+        client.id === updatedClient.id ? { ...client, ...updatedClient } : client
+      )
+    );
   };
 
   return (
@@ -56,8 +68,8 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredClients.length > 0 ? (
-              filteredClients.map((client) => (
+            {clients.length > 0 ? (
+              clients.map((client) => (
                 <TableRow key={client.id} onClick={() => toast.info(`تم النقر على العميل: ${client.name}`)}>
                   <TableCell>
                     <div className="flex items-center">
@@ -99,9 +111,30 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
                         <DropdownMenuItem onClick={() => toast.info(`عرض العميل: ${client.name}`)}>
                           عرض البيانات
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast.info(`تعديل العميل: ${client.name}`)}>
-                          <Edit className="ml-2 h-4 w-4" />
-                          تعديل
+                        <DropdownMenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // بدلاً من طباعة رسالة، سنستخدم مكون النموذج للتعديل
+                          }}
+                        >
+                          <ClientForm 
+                            isEdit={true} 
+                            clientData={{
+                              id: client.id,
+                              name: client.name,
+                              email: client.email,
+                              phone: client.phone || "",
+                              sector: client.sector || "",
+                              contact: client.contact || ""
+                            }}
+                            onSuccess={handleClientUpdate}
+                            trigger={
+                              <Button variant="ghost" className="flex items-center gap-2 w-full justify-start">
+                                <Edit className="ml-2 h-4 w-4" />
+                                تعديل
+                              </Button>
+                            }
+                          />
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-red-600" onClick={() => toast.error(`حذف العميل: ${client.name}`)}>

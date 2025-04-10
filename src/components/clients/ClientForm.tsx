@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,17 +12,40 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Edit, Plus } from "lucide-react";
 
-export const ClientForm = () => {
+interface ClientData {
+  id?: number;
+  name: string;
+  email: string;
+  phone: string;
+  sector: string;
+  contact: string;
+}
+
+interface ClientFormProps {
+  isEdit?: boolean;
+  clientData?: ClientData;
+  onSuccess?: (updatedClient: ClientData) => void;
+  trigger?: React.ReactNode;
+}
+
+export const ClientForm = ({ isEdit = false, clientData: initialClientData, onSuccess, trigger }: ClientFormProps) => {
   const [open, setOpen] = useState(false);
-  const [clientData, setClientData] = useState({
+  const [clientData, setClientData] = useState<ClientData>({
     name: "",
     email: "",
     phone: "",
     sector: "",
     contact: ""
   });
+
+  // تحميل بيانات العميل عند فتح النموذج في وضع التعديل
+  useEffect(() => {
+    if (initialClientData && isEdit) {
+      setClientData(initialClientData);
+    }
+  }, [initialClientData, isEdit, open]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -33,53 +56,75 @@ export const ClientForm = () => {
   };
 
   const handleSubmit = () => {
-    // Validate form
+    // التحقق من صحة النموذج
     if (!clientData.name || !clientData.email) {
       toast.error("يرجى إدخال اسم العميل والبريد الإلكتروني على الأقل");
       return;
     }
 
-    // Submit form data (in real app, this would call an API)
-    toast.success("تم إضافة العميل بنجاح");
+    // إرسال بيانات النموذج (في التطبيق الحقيقي، سيتم استدعاء API)
+    if (isEdit) {
+      toast.success(`تم تحديث بيانات العميل "${clientData.name}" بنجاح`);
+      if (onSuccess) onSuccess(clientData);
+    } else {
+      toast.success(`تم إضافة العميل "${clientData.name}" بنجاح`);
+    }
+    
     setOpen(false);
     
-    // Reset form
-    setClientData({
-      name: "",
-      email: "",
-      phone: "",
-      sector: "",
-      contact: ""
-    });
+    // إعادة تعيين النموذج إذا كنا في وضع الإضافة فقط
+    if (!isEdit) {
+      setClientData({
+        name: "",
+        email: "",
+        phone: "",
+        sector: "",
+        contact: ""
+      });
+    }
   };
 
   const handleCancel = () => {
     setOpen(false);
-    toast.error("تم إلغاء إضافة العميل");
     
-    // Reset form
-    setClientData({
-      name: "",
-      email: "",
-      phone: "",
-      sector: "",
-      contact: ""
-    });
+    // إعادة تعيين النموذج إذا كنا في وضع الإضافة فقط
+    if (!isEdit && !initialClientData) {
+      toast.error("تم إلغاء إضافة العميل");
+      setClientData({
+        name: "",
+        email: "",
+        phone: "",
+        sector: "",
+        contact: ""
+      });
+    } else if (isEdit && initialClientData) {
+      // إعادة البيانات الأصلية إذا كنا في وضع التعديل
+      setClientData(initialClientData);
+    }
   };
+
+  // تعيين المحتوى التلقائي للزر بناءً على الوضع
+  const defaultTrigger = isEdit ? (
+    <Button variant="ghost" size="icon" className="h-8 w-8">
+      <Edit className="h-4 w-4" />
+    </Button>
+  ) : (
+    <Button className="bg-green-600 hover:bg-green-700 gap-2">
+      <span>إضافة عميل</span>
+      <Plus className="h-4 w-4" />
+    </Button>
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-green-600 hover:bg-green-700 gap-2">
-          <span>إضافة عميل</span>
-          <Plus className="h-4 w-4" />
-        </Button>
+        {trigger || defaultTrigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]" dir="rtl">
         <DialogHeader>
-          <DialogTitle>إضافة عميل جديد</DialogTitle>
+          <DialogTitle>{isEdit ? "تعديل بيانات العميل" : "إضافة عميل جديد"}</DialogTitle>
           <DialogDescription>
-            أدخل معلومات العميل الجديد في النموذج أدناه.
+            {isEdit ? "قم بتعديل معلومات العميل في النموذج أدناه." : "أدخل معلومات العميل الجديد في النموذج أدناه."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -134,7 +179,7 @@ export const ClientForm = () => {
             إلغاء
           </Button>
           <Button type="button" onClick={handleSubmit}>
-            إضافة
+            {isEdit ? "حفظ التغييرات" : "إضافة"}
           </Button>
         </DialogFooter>
       </DialogContent>

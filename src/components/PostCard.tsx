@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Image, User } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 interface PostProps {
   post: {
@@ -18,7 +25,8 @@ interface PostProps {
   };
 }
 
-const PostCard = ({ post }: PostProps) => {
+const PostCard = ({ post: initialPost }: PostProps) => {
+  const [post, setPost] = useState(initialPost);
   const [isPublished, setIsPublished] = useState(post.status === "معتمد");
   
   const getCategoryColor = (category: string) => {
@@ -47,8 +55,16 @@ const PostCard = ({ post }: PostProps) => {
     }
   };
 
-  const handleStatusClick = () => {
-    toast.info(`عرض تفاصيل حالة المنشور: ${post.status}`);
+  const handleStatusChange = (newStatus: string) => {
+    setPost(prev => ({ ...prev, status: newStatus }));
+    toast.success(`تم تغيير حالة المنشور "${post.title}" إلى ${newStatus}`);
+    
+    // إذا تم تغيير الحالة إلى "معتمد"، نقوم بتحديث حالة النشر
+    if (newStatus === "معتمد") {
+      setIsPublished(true);
+    } else if (isPublished) {
+      setIsPublished(false);
+    }
   };
 
   const handleCategoryClick = () => {
@@ -92,18 +108,20 @@ const PostCard = ({ post }: PostProps) => {
               <h3 className="text-xl font-semibold">{post.title}</h3>
             </div>
             
-            <div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`text-sm rounded-md ${getStatusColor(post.status)}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStatusClick();
-                }}
+            <div onClick={(e) => e.stopPropagation()}>
+              <Select 
+                value={post.status}
+                onValueChange={handleStatusChange}
               >
-                {post.status}
-              </Button>
+                <SelectTrigger className={`text-sm min-w-[120px] rounded-md ${getStatusColor(post.status)}`}>
+                  <SelectValue placeholder="اختر الحالة" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="معتمد">معتمد</SelectItem>
+                  <SelectItem value="قيد المراجعة">قيد المراجعة</SelectItem>
+                  <SelectItem value="مسودة">مسودة</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
@@ -127,21 +145,17 @@ const PostCard = ({ post }: PostProps) => {
           </div>
           
           {post.category === "منشور" && post.status === "معتمد" && (
-            <div className="mt-4 flex items-center">
+            <div className="mt-4 flex items-center" onClick={(e) => e.stopPropagation()}>
               <input 
                 type="checkbox" 
                 id={`publish-${post.id}`} 
                 className="mr-2"
                 checked={isPublished}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  handlePublishToggle();
-                }}
+                onChange={handlePublishToggle}
               />
               <label 
                 htmlFor={`publish-${post.id}`} 
                 className="text-sm text-gray-600 cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
               >
                 تم النشر على جميع المنصات
               </label>
