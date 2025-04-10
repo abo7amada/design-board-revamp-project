@@ -1,103 +1,29 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Calendar, LayoutGrid, PencilRuler, BarChart, Users, Home, Settings as SettingsIcon } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("account");
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [language, setLanguage] = useState("ar");
-  const navigate = useNavigate();
-
-  // دالة للتنقل بين الصفحات
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
 
   const handleSaveSettings = () => {
     toast.success("تم حفظ الإعدادات بنجاح");
   };
 
   return (
-    <div className="min-h-screen flex" dir="rtl">
-      {/* Sidebar */}
-      <SidebarProvider>
-        <aside className="h-screen sticky top-0 w-64 border-l bg-white hidden md:block">
-          <div className="flex flex-col h-full">
-            <div className="p-4 border-b">
-              <h2 className="text-xl font-bold text-green-700">كانفاس التواصل</h2>
-            </div>
-            
-            <nav className="flex-1 overflow-y-auto p-4">
-              <ul className="space-y-6">
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => handleNavigation("/")}>
-                    <Home className="h-5 w-5" />
-                    <span className="text-lg">الرئيسية</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => handleNavigation("/")}>
-                    <LayoutGrid className="h-5 w-5" />
-                    <span className="text-lg">لوحة المنشورات</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => handleNavigation("/designs")}>
-                    <PencilRuler className="h-5 w-5" />
-                    <span className="text-lg">لوحة التصاميم</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => handleNavigation("/calendar")}>
-                    <Calendar className="h-5 w-5" />
-                    <span className="text-lg">التقويم</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => handleNavigation("/statistics")}>
-                    <BarChart className="h-5 w-5" />
-                    <span className="text-lg">الإحصائيات</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => handleNavigation("/clients")}>
-                    <Users className="h-5 w-5" />
-                    <span className="text-lg">العملاء</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-green-700">
-                    <SettingsIcon className="h-5 w-5" />
-                    <span className="text-lg">الإعدادات</span>
-                  </Button>
-                </li>
-              </ul>
-            </nav>
-            
-            <div className="p-4 border-t">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-gray-200 relative overflow-hidden">
-                    <img src="/lovable-uploads/10fc914b-5004-4050-8edd-e2273f4b215d.png" alt="Profile" className="h-full w-full object-cover" />
-                  </div>
-                </div>
-                <div className="mr-3">
-                  <p className="text-sm font-medium">أحمد محمد</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
+    <div className="min-h-screen flex w-full" dir="rtl">
+      <SidebarProvider defaultOpen={true}>
+        <SettingsSidebar />
         
         {/* Main content */}
         <main className="flex-1 bg-white">
@@ -133,7 +59,7 @@ const Settings = () => {
               }}>
                 <span className="sr-only">تغيير الوضع الليلي</span>
                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5">
-                  <path d="M2.89998 0.499976C2.89998 0.279062 2.72089 0.099976 2.49998 0.099976C2.27906 0.099976 2.09998 0.279062 2.09998 0.499976V1.09998H1.49998C1.27906 1.09998 1.09998 1.27906 1.09998 1.49998C1.09998 1.72089 1.27906 1.89998 1.49998 1.89998H2.09998V2.49998C2.09998 2.72089 2.27906 2.89998 2.49998 2.89998C2.72089 2.89998 2.89998 2.72089 2.89998 2.49998V1.89998H3.49998C3.72089 1.89998 3.89998 1.72089 3.89998 1.49998C3.89998 1.27906 3.72089 1.09998 3.49998 1.09998H2.89998V0.499976ZM5.89998 3.49998C5.89998 3.27906 5.72089 3.09998 5.49998 3.09998C5.27906 3.09998 5.09998 3.27906 5.09998 3.49998V4.09998H4.49998C4.27906 4.09998 4.09998 4.27906 4.09998 4.49998C4.09998 4.72089 4.27906 4.89998 4.49998 4.89998H5.09998V5.49998C5.09998 5.72089 5.27906 5.89998 5.49998 5.89998C5.72089 5.89998 5.89998 5.72089 5.89998 5.49998V4.89998H6.49998C6.72089 4.89998 6.89998 4.72089 6.89998 4.49998C6.89998 4.27906 6.72089 4.09998 6.49998 4.09998H5.89998V3.49998ZM1.89998 6.49998C1.89998 6.27906 1.72089 6.09998 1.49998 6.09998C1.27906 6.09998 1.09998 6.27906 1.09998 6.49998V7.09998H0.499976C0.279062 7.09998 0.099976 7.27906 0.099976 7.49998C0.099976 7.72089 0.279062 7.89998 0.499976 7.89998H1.09998V8.49998C1.09998 8.72089 1.27906 8.89997 1.49998 8.89997C1.72089 8.89997 1.89998 8.72089 1.89998 8.49998V7.89998H2.49998C2.72089 7.89998 2.89998 7.72089 2.89998 7.49998C2.89998 7.27906 2.72089 7.09998 2.49998 7.09998H1.89998V6.49998ZM8.54406 0.98184L8.24618 0.941586C8.03275 0.917676 7.90692 1.1655 8.02936 1.34194C8.17013 1.54479 8.29981 1.75592 8.41754 1.97445C8.91878 2.90485 9.20322 3.96932 9.20322 5.10022C9.20322 8.35938 6.56226 11 3.30309 11C3.21429 11 3.12613 10.9978 3.03863 10.9935C2.90332 10.9856 2.80427 11.1275 2.89217 11.2459C4.28932 13.0682 6.53072 14.2 9.0347 14.2C13.4153 14.2 17 10.6153 17 6.23474C17 3.13015 15.0595 0.428515 12.3421 -0.17297C11.1114 -0.451886 9.83304 -0.20291 8.54406 0.98184Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                  <path d="M2.89998 0.499976C2.89998 0.279062 2.72089 0.099976 2.49998 0.099976C2.27906 0.099976 2.09998 0.279062 2.09998 0.499976V1.09998H1.49998C1.27906 1.09998 1.09998 1.27906 1.09998 1.49998C1.09998 1.72089 1.27906 1.89998 1.49998 1.89998H2.09998V2.49998C2.09998 2.72089 2.27906 2.89998 2.49998 2.89998C2.72089 2.89998 2.89998 2.72089 2.89998 2.49998V1.89998H3.49998C3.72089 1.89998 3.89998 1.72089 3.89998 1.49998C3.89998 1.27906 3.72089 1.09998 3.49998 1.09998H2.89998V0.499976ZM5.89998 3.49998C5.89998 3.27906 5.72089 3.09998 5.49998 3.09998C5.27906 3.09998 5.09998 3.27906 5.09998 3.49998V4.09998H4.49998C4.27906 4.09998 4.09998 4.27906 4.09998 4.49998C4.09998 4.72089 4.27906 4.89998 4.49998 4.89998H5.09998V5.49998C5.09998 5.72089 5.27906 5.89998 5.49998 5.89998C5.72089 5.89998 5.89998 5.72089 5.89998 5.49998V4.89998H6.49998C6.72089 4.89998 6.89998 4.72089 6.89998 4.49998C6.89998 4.27906 6.72089 4.09998 6.49998 4.09998H5.89998V3.49998ZM1.89998 6.49998C1.89998 6.27906 1.72089 6.09998 1.49998 6.09998C1.27906 6.09998 1.09998 6.279কিন্ত 1.09998 6.49998V7.09998H0.499976C0.279062 7.09998 0.099976 7.27906 0.099976 7.49998C0.099976 7.72089 0.279062 7.89998 0.499976 7.89998H1.09998V8.49998C1.09998 8.72089 1.27906 8.89997 1.49998 8.89997C1.72089 8.89997 1.89998 8.72089 1.89998 8.49998V7.89998H2.49998C2.72089 7.89998 2.89998 7.72089 2.89998 7.49998C2.89998 7.27906 2.72089 7.09998 2.49998 7.09998H1.89998V6.49998ZM8.54406 0.98184L8.24618 0.941586C8.03275 0.917676 7.90692 1.1655 8.02936 1.34194C8.17013 1.54479 8.29981 1.75592 8.41754 1.97445C8.91878 2.90485 9.20322 3.96932 9.20322 5.10022C9.20322 8.35938 6.56226 11 3.30309 11C3.21429 11 3.12613 10.9978 3.03863 10.9935C2.90332 10.9856 2.80427 11.1275 2.89217 11.2459C4.28932 13.0682 6.53072 14.2 9.0347 14.2C13.4153 14.2 17 10.6153 17 6.23474C17 3.13015 15.0595 0.428515 12.3421 -0.17297C11.1114 -0.451886 9.83304 -0.20291 8.54406 0.98184Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
                 </svg>
               </Button>
             </div>

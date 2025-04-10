@@ -30,12 +30,6 @@ const Clients = () => {
       ? filteredClients.filter(client => client.status === "نشط")
       : filteredClients.filter(client => client.status !== "نشط");
 
-  const resetFilters = () => {
-    setSearchQuery("");
-    setSelectedStatus("الكل");
-    setSelectedSector("الكل");
-  };
-
   return (
     <div className="min-h-screen flex w-full" dir="rtl">
       <SidebarProvider defaultOpen={true}>
