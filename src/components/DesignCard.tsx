@@ -4,6 +4,7 @@ import { Heart, MessageCircle, MoreHorizontal, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface Design {
   id: number;
@@ -34,11 +35,41 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
     });
   };
   
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLiked(!liked);
+    toast(liked ? "تم إلغاء الإعجاب" : "تم الإعجاب بالتصميم");
+  };
+  
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSaved(!saved);
+    toast(saved ? "تم إلغاء الحفظ" : "تم حفظ التصميم");
+  };
+  
+  const handleView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.info(`عرض تفاصيل التصميم: ${design.title}`);
+  };
+  
+  const handleMore = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.info("فتح قائمة خيارات التصميم");
+  };
+  
+  const handleComments = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.info(`عرض ${design.comments} تعليقات`);
+  };
+  
   return (
-    <Card className={cn(
-      "overflow-hidden transition-all duration-300 hover:shadow-md",
-      viewMode === "list" && "flex flex-row"
-    )}>
+    <Card 
+      className={cn(
+        "overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer",
+        viewMode === "list" && "flex flex-row"
+      )}
+      onClick={() => toast.info(`تم النقر على التصميم: ${design.title}`)}
+    >
       <div className={cn(
         viewMode === "grid" ? "w-full" : "w-1/3"
       )}>
@@ -56,7 +87,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
               variant="ghost" 
               size="icon" 
               className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm" 
-              onClick={() => setSaved(!saved)}
+              onClick={handleSave}
             >
               <Bookmark className={cn("h-5 w-5", saved ? "fill-blue-600 text-blue-600" : "text-gray-600")} />
             </Button>
@@ -71,17 +102,23 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
         <CardHeader className="p-4 pb-2">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm font-medium text-blue-600">{design.category}</p>
+              <p className="text-sm font-medium text-blue-600 cursor-pointer hover:underline" onClick={(e) => {
+                e.stopPropagation();
+                toast.info(`تصفية حسب الفئة: ${design.category}`);
+              }}>{design.category}</p>
               <h3 className="text-lg font-semibold mt-1 text-gray-800">{design.title}</h3>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" onClick={handleMore}>
               <MoreHorizontal className="h-5 w-5" />
             </Button>
           </div>
         </CardHeader>
         
         <CardContent className="p-4 pt-0 pb-2 flex-grow">
-          <p className="text-sm text-gray-500">تم الإنشاء بواسطة <span className="font-medium text-gray-700">{design.author}</span> في {formatDate(design.date)}</p>
+          <p className="text-sm text-gray-500">تم الإنشاء بواسطة <span className="font-medium text-gray-700 cursor-pointer hover:underline" onClick={(e) => {
+            e.stopPropagation();
+            toast.info(`عرض ملف المستخدم: ${design.author}`);
+          }}>{design.author}</span> في {formatDate(design.date)}</p>
         </CardContent>
         
         <CardFooter className="p-4 pt-2 flex justify-between border-t border-gray-100">
@@ -93,19 +130,19 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                 "flex items-center gap-1 px-2", 
                 liked ? "text-red-500" : "text-gray-500"
               )}
-              onClick={() => setLiked(!liked)}
+              onClick={handleLike}
             >
               <Heart className={cn("h-4 w-4", liked && "fill-red-500")} />
               <span>{liked ? design.likes + 1 : design.likes}</span>
             </Button>
             
-            <Button variant="ghost" size="sm" className="flex items-center gap-1 px-2 text-gray-500">
+            <Button variant="ghost" size="sm" className="flex items-center gap-1 px-2 text-gray-500" onClick={handleComments}>
               <MessageCircle className="h-4 w-4" />
               <span>{design.comments}</span>
             </Button>
           </div>
           
-          <Button variant="outline" size="sm" className="text-sm">
+          <Button variant="outline" size="sm" className="text-sm" onClick={handleView}>
             عرض
           </Button>
         </CardFooter>

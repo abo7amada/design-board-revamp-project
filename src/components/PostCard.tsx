@@ -1,7 +1,9 @@
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Image, User } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface PostProps {
   post: {
@@ -17,6 +19,8 @@ interface PostProps {
 }
 
 const PostCard = ({ post }: PostProps) => {
+  const [isPublished, setIsPublished] = useState(post.status === "معتمد");
+  
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "منشور":
@@ -43,8 +47,21 @@ const PostCard = ({ post }: PostProps) => {
     }
   };
 
+  const handleStatusClick = () => {
+    toast.info(`عرض تفاصيل حالة المنشور: ${post.status}`);
+  };
+
+  const handleCategoryClick = () => {
+    toast.info(`تصفية حسب الفئة: ${post.category}`);
+  };
+
+  const handlePublishToggle = () => {
+    setIsPublished(!isPublished);
+    toast.success(isPublished ? "تم إلغاء النشر" : "تم النشر على جميع المنصات");
+  };
+
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-md transition-all cursor-pointer" onClick={() => toast.info(`تم النقر على المنشور: ${post.title}`)}>
       <div className="flex flex-col md:flex-row border-b border-gray-100">
         {post.hasDesign && (
           <div className="md:w-1/4 lg:w-1/5 p-4">
@@ -62,7 +79,13 @@ const PostCard = ({ post }: PostProps) => {
           <div className="flex flex-wrap justify-between items-start mb-3">
             <div>
               <div className="flex items-center mb-2">
-                <span className={`text-sm px-3 py-1 rounded-md ${getCategoryColor(post.category)}`}>
+                <span 
+                  className={`text-sm px-3 py-1 rounded-md ${getCategoryColor(post.category)} cursor-pointer`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCategoryClick();
+                  }}
+                >
                   {post.category}
                 </span>
               </div>
@@ -70,7 +93,15 @@ const PostCard = ({ post }: PostProps) => {
             </div>
             
             <div>
-              <Button variant="ghost" size="sm" className={`text-sm rounded-md ${getStatusColor(post.status)}`}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`text-sm rounded-md ${getStatusColor(post.status)}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStatusClick();
+                }}
+              >
                 {post.status}
               </Button>
             </div>
@@ -97,8 +128,21 @@ const PostCard = ({ post }: PostProps) => {
           
           {post.category === "منشور" && post.status === "معتمد" && (
             <div className="mt-4 flex items-center">
-              <input type="checkbox" id={`publish-${post.id}`} className="mr-2" />
-              <label htmlFor={`publish-${post.id}`} className="text-sm text-gray-600">
+              <input 
+                type="checkbox" 
+                id={`publish-${post.id}`} 
+                className="mr-2"
+                checked={isPublished}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handlePublishToggle();
+                }}
+              />
+              <label 
+                htmlFor={`publish-${post.id}`} 
+                className="text-sm text-gray-600 cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
                 تم النشر على جميع المنصات
               </label>
             </div>
