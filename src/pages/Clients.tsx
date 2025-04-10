@@ -5,8 +5,8 @@ import { clientsData } from "@/data/clients-data";
 import { ClientsTable } from "@/components/clients/ClientsTable";
 import { ClientForm } from "@/components/clients/ClientForm";
 import { ClientsFilter } from "@/components/clients/ClientsFilter";
-import { ClientsSidebar } from "@/components/clients/ClientsSidebar";
 import { ClientsHeader } from "@/components/clients/ClientsHeader";
+import { AppSidebar } from "@/components/shared/AppSidebar";
 
 const Clients = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,7 +33,7 @@ const Clients = () => {
   return (
     <div className="min-h-screen flex w-full" dir="rtl">
       <SidebarProvider defaultOpen={true}>
-        <ClientsSidebar />
+        <AppSidebar />
         
         {/* Main content */}
         <main className="flex-1 bg-white">
