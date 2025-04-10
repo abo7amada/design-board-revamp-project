@@ -38,7 +38,7 @@ const Clients = () => {
 
   return (
     <div className="min-h-screen flex w-full" dir="rtl">
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={true}>
         <ClientsSidebar />
         
         {/* Main content */}

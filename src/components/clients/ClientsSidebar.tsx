@@ -2,7 +2,6 @@
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bell, Calendar, Home, LayoutGrid, PencilRuler, Settings, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 export const ClientsSidebar = () => {
   const navigate = useNavigate();
@@ -52,7 +51,7 @@ export const ClientsSidebar = () => {
               </Button>
             </li>
             <li>
-              <Button variant="link" className="w-full justify-start gap-2 text-green-700">
+              <Button variant="link" className="w-full justify-start gap-2 text-green-700" onClick={() => handleNavigation("/clients")}>
                 <Users className="h-5 w-5" />
                 <span className="text-lg">العملاء</span>
               </Button>
