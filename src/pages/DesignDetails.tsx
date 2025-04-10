@@ -44,6 +44,46 @@ const DesignDetails = () => {
     navigate(-1);
   };
   
+  const handleDownload = () => {
+    // تحميل التصميم
+    toast.success(`جاري تحميل التصميم: ${design?.title}`);
+    
+    // إنشاء رابط وهمي للتحميل
+    const link = document.createElement('a');
+    link.href = design?.image || '/placeholder.svg';
+    link.download = `${design?.title.replace(/\s+/g, '_')}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
+  const handleShare = () => {
+    // مشاركة التصميم
+    const designUrl = `${window.location.origin}/design-details/${design?.id}`;
+    const shareText = `مشاركة التصميم: ${design?.title}\nتم إنشاء التصميم بواسطة: ${design?.author}\nفي تاريخ: ${formatDate(design?.date || '')}\nرابط التصميم: ${designUrl}`;
+    
+    // إنشاء رابط مشاركة واتساب
+    const encodedText = encodeURIComponent(shareText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    
+    // فتح رابط واتساب في نافذة جديدة
+    window.open(whatsappUrl, '_blank');
+    
+    toast.success(`تم فتح واتساب لمشاركة التصميم "${design?.title}"`);
+  };
+  
+  const handleEdit = () => {
+    // تعديل التصميم
+    toast.success(`تم الانتقال إلى تعديل التصميم: ${design?.title}`);
+    navigate(`/add-design`, { state: { design: design, isEditing: true } });
+  };
+  
+  const handleChat = () => {
+    // بدء محادثة حول التصميم
+    navigate(`/chat`, { state: { designId: design?.id, designTitle: design?.title } });
+    toast.success(`تم الانتقال إلى المحادثات حول التصميم: ${design?.title}`);
+  };
+  
   // اذا لم يتم العثور على التصميم
   if (!design) {
     return (
@@ -75,11 +115,21 @@ const DesignDetails = () => {
             <h1 className="text-xl font-bold text-green-700">تفاصيل التصميم</h1>
             
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={handleShare}
+              >
                 <Share2 className="h-4 w-4 ml-1" />
                 <span>مشاركة</span>
               </Button>
-              <Button variant="default" className="bg-green-600 hover:bg-green-700" size="sm">
+              <Button 
+                variant="default" 
+                className="bg-green-600 hover:bg-green-700" 
+                size="sm"
+                onClick={handleEdit}
+              >
                 <Edit className="h-4 w-4 ml-1" />
                 <span>تعديل</span>
               </Button>
@@ -149,12 +199,19 @@ const DesignDetails = () => {
                     </div>
                     
                     <div className="mt-6 space-y-3">
-                      <Button className="w-full bg-green-600 hover:bg-green-700">
+                      <Button 
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        onClick={handleDownload}
+                      >
                         <Download className="h-4 w-4 ml-2" />
                         تحميل التصميم
                       </Button>
                       
-                      <Button variant="outline" className="w-full">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={handleChat}
+                      >
                         <MessageCircle className="h-4 w-4 ml-2" />
                         بدء محادثة
                       </Button>
