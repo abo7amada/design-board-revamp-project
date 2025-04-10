@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { 
   Bell, Calendar as CalendarIcon, LayoutGrid, PencilRuler, 
   Search, Settings, BarChart, Users, Home, ArrowLeft,
-  Plus, Filter, ChevronDown, Instagram, Facebook, Twitter, Linkedin, Monitor, MoreHorizontal
+  Plus, Filter, ChevronDown, Instagram, Facebook, Twitter, Linkedin, Monitor, MoreHorizontal,
+  Heart, MessageCircle // Added these missing icons
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider } from "@/components/ui/sidebar";

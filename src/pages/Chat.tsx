@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import ChatList from "@/components/chat/ChatList";
 import MessagePanel from "@/components/chat/MessagePanel";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Users, WhatsappIcon } from "lucide-react";
+import { MessageSquare, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "react-router-dom";
 import WhatsappIntegrationPanel from "@/components/chat/WhatsappIntegrationPanel";
