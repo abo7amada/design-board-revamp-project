@@ -61,7 +61,7 @@ function Calendar({
           // دالة تحديد ما إذا كان اليوم يحتوي على أحداث
           const hasEvents = () => {
             // هنا يمكن تنفيذ المنطق الخاص بالتحقق من وجود أحداث
-            if (props.day && props.modifiers?.disabled) return false;
+            if (props.disabled) return false;
             
             // بيانات وهمية: أيام عشوائية من الشهر الحالي
             const daysWithEvents = [5, 10, 15, 20, 25];
