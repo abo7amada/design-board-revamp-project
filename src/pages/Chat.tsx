@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useLocation } from "react-router-dom";
 import WhatsappIntegrationPanel from "@/components/chat/WhatsappIntegrationPanel";
 import { ChatChannels } from "@/components/chat/ChatChannels";
+import ActiveMembersPanel from "@/components/chat/ActiveMembersPanel";
 
 const Chat = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -17,6 +18,7 @@ const Chat = () => {
   const [activeDesign, setActiveDesign] = useState<{id: number, title: string} | null>(null);
   const [isWhatsappPanelOpen, setIsWhatsappPanelOpen] = useState(false);
   const [showChannels, setShowChannels] = useState(true);
+  const [isActiveMembersPanelOpen, setIsActiveMembersPanelOpen] = useState(false);
   const location = useLocation();
   
   // Listen for edit request tab events
@@ -54,6 +56,10 @@ const Chat = () => {
 
   const handleOpenWhatsappPanel = () => {
     setIsWhatsappPanelOpen(true);
+  };
+  
+  const handleShowActiveMembers = () => {
+    setIsActiveMembersPanelOpen(true);
   };
   
   return (
@@ -102,7 +108,7 @@ const Chat = () => {
                   </Button>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={() => toast.info("عرض المستخدمين النشطين")}>
+                  <Button onClick={handleShowActiveMembers}>
                     <Users className="h-4 w-4 ml-2" />
                     المستخدمون النشطون
                   </Button>
@@ -249,6 +255,11 @@ const Chat = () => {
           <WhatsappIntegrationPanel 
             isOpen={isWhatsappPanelOpen} 
             onClose={() => setIsWhatsappPanelOpen(false)} 
+          />
+
+          <ActiveMembersPanel 
+            isOpen={isActiveMembersPanelOpen}
+            onClose={() => setIsActiveMembersPanelOpen(false)}
           />
         </div>
       </div>
