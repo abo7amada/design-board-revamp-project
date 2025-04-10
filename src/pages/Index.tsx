@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Calendar, LayoutGrid, PencilRuler, Search, Settings, BarChart, Users, Home, Plus } from "lucide-react";
@@ -83,9 +82,12 @@ const Index = () => {
     navigate("/add-post");
   };
   
-  // معالج النقر على زر التقويم
   const handleCalendarClick = () => {
     navigate("/calendar");
+  };
+  
+  const handleDesignsClick = () => {
+    navigate("/designs");
   };
 
   return (
@@ -116,7 +118,7 @@ const Index = () => {
                   <Button 
                     variant="link" 
                     className="w-full justify-start gap-2 text-gray-600 hover:text-green-700"
-                    onClick={() => navigate("/designs")}
+                    onClick={handleDesignsClick}
                   >
                     <PencilRuler className="h-5 w-5" />
                     <span className="text-lg">لوحة التصاميم</span>

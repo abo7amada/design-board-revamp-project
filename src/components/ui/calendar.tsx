@@ -55,6 +55,29 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+        DayContent: (props) => {
+          const { date, displayMonth } = props;
+          
+          // دالة تحديد ما إذا كان اليوم يحتوي على أحداث
+          const hasEvents = () => {
+            // هنا يمكن تنفيذ المنطق الخاص بالتحقق من وجود أحداث
+            if (props.day && props.modifiers?.disabled) return false;
+            
+            // بيانات وهمية: أيام عشوائية من الشهر الحالي
+            const daysWithEvents = [5, 10, 15, 20, 25];
+            return date.getMonth() === displayMonth?.getMonth() && 
+                   daysWithEvents.includes(date.getDate());
+          };
+          
+          return (
+            <div className="relative h-full w-full">
+              <div>{date.getDate()}</div>
+              {hasEvents() && (
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-green-600" />
+              )}
+            </div>
+          );
+        },
       }}
       {...props}
     />
