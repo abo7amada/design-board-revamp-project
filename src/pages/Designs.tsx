@@ -98,7 +98,7 @@ const Designs = () => {
   );
 
   const handleAddDesign = () => {
-    toast.success("تم فتح نافذة إضافة تصميم جديد");
+    navigate("/add-design");
   };
 
   const handleFilterChange = (category: string) => {
