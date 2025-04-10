@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Heart, MessageCircle, MoreHorizontal, Bookmark, Share2, Edit, Pencil } from "lucide-react";
+import { Heart, MessageCircle, MoreHorizontal, Bookmark, Share2, Edit, Pencil, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -56,6 +56,8 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
     e.stopPropagation();
     console.log("عرض التصميم:", design.title);
     toast.info(`عرض تفاصيل التصميم: ${design.title}`);
+    // Here we would navigate to the design detail page in a real app
+    // navigate(`/designs/${design.id}`);
   };
   
   const handleMore = (e: React.MouseEvent) => {
@@ -76,8 +78,8 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     console.log("تعديل التصميم:", design.title);
-    toast.info(`تعديل التصميم: ${design.title}`);
-    // يمكن إضافة التنقل إلى صفحة التعديل لاحقًا
+    toast.success(`تعديل التصميم: ${design.title}`);
+    // Here we would navigate to the edit page in a real app
     // navigate(`/edit-design/${design.id}`);
   };
   
@@ -107,7 +109,10 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
           "overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer",
           viewMode === "list" && "flex flex-row"
         )}
-        onClick={() => toast.info(`تم النقر على التصميم: ${design.title}`)}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleView(e);
+        }}
       >
         <div className={cn(
           viewMode === "grid" ? "w-full" : "w-1/3"
@@ -233,10 +238,27 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                   نشر
                 </Button>
               )}
-              <Button variant="outline" size="sm" className="text-sm" onClick={handleView}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-sm flex items-center gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleView(e);
+                }}
+              >
+                <Eye className="h-3 w-3 ml-1" />
                 عرض
               </Button>
-              <Button variant="outline" size="sm" className="text-sm bg-blue-50 text-blue-600" onClick={handleEdit}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-sm bg-blue-50 text-blue-600 flex items-center gap-1" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(e);
+                }}
+              >
                 <Pencil className="h-3 w-3 ml-1" />
                 تعديل
               </Button>
