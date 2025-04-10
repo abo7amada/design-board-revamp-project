@@ -142,7 +142,11 @@ const Designs = () => {
                   </Button>
                 </li>
                 <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على التقويم")}>
+                  <Button 
+                    variant="link" 
+                    className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" 
+                    onClick={() => navigate("/calendar")}
+                  >
                     <Calendar className="h-5 w-5" />
                     <span className="text-lg">التقويم</span>
                   </Button>
