@@ -1,6 +1,6 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { BarChart, Calendar, Home, LayoutGrid, PencilRuler, Settings, Users } from "lucide-react";
+import { BarChart, Calendar, Home, Settings, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const AppSidebar = () => {
@@ -40,21 +40,11 @@ export const AppSidebar = () => {
             <li>
               <Button 
                 variant="link" 
-                className={`w-full justify-start gap-2 ${isActive("/posts") ? "text-green-700" : "text-gray-600 hover:text-green-700"}`} 
-                onClick={() => handleNavigation("/posts")}
+                className={`w-full justify-start gap-2 ${isActive("/clients") ? "text-green-700" : "text-gray-600 hover:text-green-700"}`} 
+                onClick={() => handleNavigation("/clients")}
               >
-                <LayoutGrid className="h-5 w-5" />
-                <span className="text-lg">لوحة المنشورات</span>
-              </Button>
-            </li>
-            <li>
-              <Button 
-                variant="link" 
-                className={`w-full justify-start gap-2 ${isActive("/designs") ? "text-green-700" : "text-gray-600 hover:text-green-700"}`} 
-                onClick={() => handleNavigation("/designs")}
-              >
-                <PencilRuler className="h-5 w-5" />
-                <span className="text-lg">لوحة التصاميم</span>
+                <Users className="h-5 w-5" />
+                <span className="text-lg">العملاء</span>
               </Button>
             </li>
             <li>
@@ -75,16 +65,6 @@ export const AppSidebar = () => {
               >
                 <BarChart className="h-5 w-5" />
                 <span className="text-lg">الإحصائيات</span>
-              </Button>
-            </li>
-            <li>
-              <Button 
-                variant="link" 
-                className={`w-full justify-start gap-2 ${isActive("/clients") ? "text-green-700" : "text-gray-600 hover:text-green-700"}`} 
-                onClick={() => handleNavigation("/clients")}
-              >
-                <Users className="h-5 w-5" />
-                <span className="text-lg">العملاء</span>
               </Button>
             </li>
             <li>

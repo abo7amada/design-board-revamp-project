@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Heart, MessageCircle, MoreHorizontal, Bookmark, Share2, Edit, Pencil, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,13 +24,15 @@ interface Design {
 interface DesignCardProps {
   design: Design;
   viewMode: "grid" | "list";
+  onStatusChange?: (id: number, newStatus: string) => void;
 }
 
-const DesignCard = ({ design, viewMode }: DesignCardProps) => {
+const DesignCard = ({ design, viewMode, onStatusChange }: DesignCardProps) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isMessagePanelOpen, setIsMessagePanelOpen] = useState(false);
+  const [designCategory, setDesignCategory] = useState(design.category);
   const navigate = useNavigate();
   
   const formatDate = (dateString: string) => {
@@ -98,6 +101,10 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   
   const handleStatusChange = (newStatus: string) => {
     console.log("تم تغيير حالة التصميم إلى:", newStatus);
+    setDesignCategory(newStatus);
+    if (onStatusChange) {
+      onStatusChange(design.id, newStatus);
+    }
     toast.success(`تم تغيير حالة التصميم إلى: ${newStatus}`);
   };
   
@@ -110,8 +117,9 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   const handleWhatsAppShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Create share text with design title
-    const shareText = `مشاركة التصميم: ${design.title}`;
+    // Create a more detailed share message with design information
+    const designUrl = `${window.location.origin}/designs/${design.id}`;
+    const shareText = `مشاركة التصميم: ${design.title}\nتم إنشاء التصميم بواسطة: ${design.author}\nفي تاريخ: ${formatDate(design.date)}\nرابط التصميم: ${designUrl}`;
     
     // Create a WhatsApp share URL
     // Format: https://wa.me/?text=encodedText
@@ -185,8 +193,8 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
               <div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <p className={`text-sm font-medium px-2 py-1 rounded-md cursor-pointer ${getCategoryColor(design.category)}`} onClick={(e) => e.stopPropagation()}>
-                      {design.category}
+                    <p className={`text-sm font-medium px-2 py-1 rounded-md cursor-pointer ${getCategoryColor(designCategory)}`} onClick={(e) => e.stopPropagation()}>
+                      {designCategory}
                     </p>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-40 bg-white">
@@ -231,10 +239,10 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
-                    toast.info("مشاركة التصميم");
+                    handleWhatsAppShare(e);
                   }}>
                     <Share2 className="h-4 w-4 ml-2" />
-                    مشاركة
+                    مشاركة عبر واتساب
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
@@ -242,27 +250,6 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                   }}>
                     <MessageCircle className="h-4 w-4 ml-2" />
                     محادثة
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation();
-                    handleWhatsAppShare(e);
-                  }}>
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-4 w-4 ml-2" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
-                      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Z" />
-                      <path d="M14 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Z" />
-                      <path d="M12 17c3.5 0 5-2 5-5" />
-                    </svg>
-                    إرسال عبر واتساب
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -303,7 +290,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
             </div>
             
             <div className="flex items-center gap-2">
-              {design.category === "معتمد" && (
+              {designCategory === "معتمد" && (
                 <Button 
                   variant="outline" 
                   size="sm" 
