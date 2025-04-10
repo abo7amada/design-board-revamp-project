@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/AppSidebar";
@@ -8,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { SocialPlatformCard } from "@/components/social/SocialPlatformCard";
 import { toast } from "sonner";
-import { Network, NetworkOff, Plus, RefreshCw, Share2 } from "lucide-react";
+import { Network, Wifi, Plus, RefreshCw, Share2 } from "lucide-react";
 
 interface SocialPlatform {
   id: string;
@@ -96,7 +95,7 @@ const SocialIntegrations = () => {
                         {connectedPlatforms.length > 0 ? (
                           <Network className="h-5 w-5 text-green-600" />
                         ) : (
-                          <NetworkOff className="h-5 w-5 text-gray-400" />
+                          <Wifi className="h-5 w-5 text-gray-400 opacity-50" />
                         )}
                         <span>حالة الاتصال</span>
                       </CardTitle>
