@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { designsData } from "@/components/data/mockData";
+import { Design } from "@/types/design";
 
 const DesignDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +18,7 @@ const DesignDetails = () => {
   const [activeTab, setActiveTab] = useState("details");
   
   // استخدام بيانات التصميم من الحالة أو البحث عنها في البيانات
-  const designFromState = location.state?.design;
+  const designFromState = location.state?.design as Design;
   const designFromData = designsData.find(d => d.id === parseInt(id || "0"));
   const design = designFromState || designFromData;
   

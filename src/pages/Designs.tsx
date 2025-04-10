@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, List, Filter, Plus, Search } from "lucide-react";
@@ -10,45 +9,10 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppSidebar } from "@/components/shared/AppSidebar";
+import { designsData } from "@/components/data/mockData";
+import { Design } from "@/types/design";
 
 // بيانات افتراضية للتصاميم
-const designsData = [
-  {
-    id: 1,
-    title: "إطلاق منتج جديد",
-    category: "معتمد",
-    image: "/placeholder.svg",
-    date: "2023/05/02",
-    author: "شركة الوفق الأصفر",
-    likes: 24,
-    comments: 8,
-    description: "تم تصميم الإعلان بألوان العلامة التجارية"
-  },
-  {
-    id: 2,
-    title: "ورشة عمل تقنية",
-    category: "قيد المراجعة",
-    image: "/placeholder.svg",
-    date: "2023/06/05",
-    author: "شركة الوفق الأصفر",
-    likes: 43,
-    comments: 12,
-    description: "أضفت تفاصيل الورشة كما طلبتم"
-  },
-  {
-    id: 3,
-    title: "إعلان توظيف",
-    category: "مسودة",
-    image: "/placeholder.svg",
-    date: "2023/09/01",
-    author: "مؤسسة نجمة الشمال",
-    likes: 18,
-    comments: 5,
-    description: "بانتظار تعليقاتكم على التصميم"
-  }
-];
-
-// تصنيف التصاميم حسب الحالة
 const statuses = {
   "معتمد": { count: designsData.filter(d => d.category === "معتمد").length, color: "bg-green-100", textColor: "text-green-800", borderColor: "border-green-500" },
   "قيد المراجعة": { count: designsData.filter(d => d.category === "قيد المراجعة").length, color: "bg-yellow-100", textColor: "text-yellow-800", borderColor: "border-yellow-500" },
@@ -225,7 +189,7 @@ const Designs = () => {
               {viewMode === "list" ? (
                 filteredDesigns.length > 0 ? (
                   filteredDesigns.map(design => (
-                    <DesignCard key={design.id} design={design} viewMode="list" />
+                    <DesignCard key={design.id} design={design} viewMode="list" onStatusChange={() => {}} />
                   ))
                 ) : (
                   <div className="col-span-full text-center py-12">
@@ -246,7 +210,7 @@ const Designs = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredDesigns.length > 0 ? (
                     filteredDesigns.map(design => (
-                      <DesignCard key={design.id} design={design} viewMode="grid" />
+                      <DesignCard key={design.id} design={design} viewMode="grid" onStatusChange={() => {}} />
                     ))
                   ) : (
                     <div className="col-span-full text-center py-12">
@@ -257,15 +221,14 @@ const Designs = () => {
                         onClick={() => {
                           setSearchQuery("");
                           setSelectedCategory("الكل");
-                        }}
-                      >
-                        عرض جميع التصاميم
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                      }}
+                    >
+                      عرض جميع التصاميم
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </SidebarProvider>
