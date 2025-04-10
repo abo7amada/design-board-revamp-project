@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from "date-fns";
 
 // Import our new component modules
 import { platformSizes } from "./platformSizes";
@@ -114,19 +115,20 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
 
   const handleSelectPlatform = (platform: string) => {
     setSelectedPlatform(platform);
-    // Create a new object with all platforms set to false
-    const updatedPlatforms = {
-      facebook: false,
-      instagram: false,
-      twitter: false,
-      linkedin: false,
-      website: false,
-      tiktok: false,
-      pinterest: false,
-    };
-    // Set only the selected platform to true
-    updatedPlatforms[platform as keyof typeof updatedPlatforms] = true;
-    setPlatforms(updatedPlatforms);
+    // Fix the TypeScript error by explicitly specifying the type with all required properties
+    setPlatforms(prev => {
+      const newPlatforms = {
+        facebook: false,
+        instagram: false,
+        twitter: false,
+        linkedin: false,
+        website: false,
+        tiktok: false,
+        pinterest: false,
+      };
+      newPlatforms[platform as keyof typeof newPlatforms] = true;
+      return newPlatforms;
+    });
     setPlatformSpecificStep(2);
     
     // اختيار الحجم الافتراضي للمنصة
@@ -152,12 +154,6 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
       default:
         setSelectedSize("default");
     }
-  };
-
-  const handleSelectAISuggestion = (suggestion: { text: string, platform: string }) => {
-    setCaption(suggestion.text);
-    setActiveTab("content");
-    toast.success("تم اختيار الاقتراح بنجاح");
   };
 
   const renderPlatformSpecificContent = () => {
@@ -287,3 +283,4 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
 };
 
 export default PublishDesignModal;
+
