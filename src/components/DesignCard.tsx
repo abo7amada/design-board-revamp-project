@@ -170,6 +170,10 @@ const DesignCard = ({ design, viewMode, onStatusChange }: DesignCardProps) => {
               src={design.image} 
               alt={design.title} 
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              onError={(e) => {
+                // Fallback to placeholder if image fails to load
+                (e.target as HTMLImageElement).src = "/placeholder.svg";
+              }}
             />
             <div className="absolute top-3 left-3">
               <Button 

@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Image, User, Share2 } from "lucide-react";
@@ -110,9 +109,9 @@ const PostCard = ({ post: initialPost }: PostProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all cursor-pointer" onClick={() => toast.info(`تم النقر على المنشور: ${post.title}`)}>
       <div className="flex flex-col md:flex-row border-b border-gray-100">
-        {post.hasDesign && (
+        {post.hasDesign && post.image && (
           <div className="md:w-1/4 lg:w-1/5 p-4">
-            <div className="bg-gray-100 h-32 rounded-md flex items-center justify-center">
+            <div className="bg-gray-100 h-32 rounded-md flex items-center justify-center overflow-hidden">
               <img 
                 src={post.image || "/placeholder.svg"} 
                 alt={post.title}
@@ -122,7 +121,7 @@ const PostCard = ({ post: initialPost }: PostProps) => {
           </div>
         )}
         
-        <div className={`p-4 ${post.hasDesign ? 'md:w-3/4 lg:w-4/5' : 'w-full'}`}>
+        <div className={`p-4 ${post.hasDesign && post.image ? 'md:w-3/4 lg:w-4/5' : 'w-full'}`}>
           <div className="flex flex-wrap justify-between items-start mb-3">
             <div>
               <div className="flex items-center mb-2">
@@ -142,6 +141,10 @@ const PostCard = ({ post: initialPost }: PostProps) => {
                 )}
               </div>
               <h3 className="text-xl font-semibold">{post.title}</h3>
+              
+              {post.content && (
+                <p className="text-gray-600 mt-2 line-clamp-2">{post.content}</p>
+              )}
             </div>
             
             <div onClick={(e) => e.stopPropagation()}>
