@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import PublishDesignModal from "./PublishDesignModal";
+import MessagePanel from "./chat/MessagePanel";
 
 interface Design {
   id: number;
@@ -29,6 +30,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isMessagePanelOpen, setIsMessagePanelOpen] = useState(false);
   const navigate = useNavigate();
   
   const formatDate = (dateString: string) => {
@@ -68,7 +70,8 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   
   const handleComments = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toast.info(`عرض ${design.comments} تعليقات`);
+    setIsMessagePanelOpen(true);
+    toast.info(`فتح المحادثة حول التصميم: ${design.title}`);
   };
   
   const handlePublish = (e: React.MouseEvent) => {
@@ -93,6 +96,12 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   const handleStatusChange = (newStatus: string) => {
     console.log("تم تغيير حالة التصميم إلى:", newStatus);
     toast.success(`تم تغيير حالة التصميم إلى: ${newStatus}`);
+  };
+  
+  const handleChat = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/chat`, { state: { designId: design.id, designTitle: design.title } });
+    toast.success(`الانتقال إلى المحادثات حول التصميم: ${design.title}`);
   };
   
   // دالة لتحديد لون الفئة
@@ -206,6 +215,13 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                     <Share2 className="h-4 w-4 ml-2" />
                     مشاركة
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    handleChat(e);
+                  }}>
+                    <MessageCircle className="h-4 w-4 ml-2" />
+                    محادثة
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -233,7 +249,12 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                 <span>{liked ? design.likes + 1 : design.likes}</span>
               </Button>
               
-              <Button variant="ghost" size="sm" className="flex items-center gap-1 px-2 text-gray-500" onClick={handleComments}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center gap-1 px-2 text-gray-500" 
+                onClick={handleComments}
+              >
                 <MessageCircle className="h-4 w-4" />
                 <span>{design.comments}</span>
               </Button>
@@ -278,6 +299,13 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
         isOpen={isPublishModalOpen} 
         onClose={() => setIsPublishModalOpen(false)} 
         design={design}
+      />
+      
+      <MessagePanel
+        isOpen={isMessagePanelOpen}
+        onClose={() => setIsMessagePanelOpen(false)}
+        designId={design.id}
+        designTitle={design.title}
       />
     </>
   );
