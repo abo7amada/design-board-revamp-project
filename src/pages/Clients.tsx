@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { clientsData } from "@/data/clients-data";
@@ -729,4 +730,22 @@ const Clients = () => {
                           <Button 
                             variant="link" 
                             className="mt-4 text-green-600"
-                            onClick={() =>
+                            onClick={() => navigate("/add-post")}
+                          >
+                            إضافة منشور جديد
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
+        </main>
+      </SidebarProvider>
+    </div>
+  );
+};
+
+export default Clients;
