@@ -14,6 +14,7 @@ import Statistics from "./pages/Statistics";
 import Clients from "./pages/Clients";
 import Settings from "./pages/Settings";
 import Chat from "./pages/Chat";
+import SocialIntegrations from "./pages/SocialIntegrations";
 import NotFound from "./pages/NotFound";
 import { StrictMode } from "react";
 
@@ -49,6 +50,7 @@ const App = () => {
               <Route path="/clients/:clientId/statistics" element={<Clients />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/social-integrations" element={<SocialIntegrations />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

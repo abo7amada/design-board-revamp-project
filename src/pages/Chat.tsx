@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import ChatList from "@/components/chat/ChatList";
@@ -8,12 +9,14 @@ import { MessageSquare, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "react-router-dom";
 import WhatsappIntegrationPanel from "@/components/chat/WhatsappIntegrationPanel";
+import { ChatChannels } from "@/components/chat/ChatChannels";
 
 const Chat = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [activeDesign, setActiveDesign] = useState<{id: number, title: string} | null>(null);
   const [isWhatsappPanelOpen, setIsWhatsappPanelOpen] = useState(false);
+  const [showChannels, setShowChannels] = useState(true);
   const location = useLocation();
   
   // Listen for edit request tab events
@@ -59,12 +62,45 @@ const Chat = () => {
         <AppSidebar />
         
         <div className="flex flex-1 overflow-hidden">
-          <ChatList />
+          {/* Channels Sidebar */}
+          <div className={`md:block ${showChannels ? 'block' : 'hidden'} w-full md:w-64 shrink-0 border-l bg-white overflow-hidden`}>
+            <ChatChannels />
+          </div>
+          
+          {/* Chat List */}
+          <div className={`md:block ${!showChannels ? 'block' : 'hidden'} md:block w-full md:w-72 shrink-0 border-l bg-white overflow-hidden`}>
+            <div className="h-full flex flex-col">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h2 className="font-bold text-lg">المحادثات</h2>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="md:hidden"
+                  onClick={() => setShowChannels(true)}
+                >
+                  عرض القنوات
+                </Button>
+              </div>
+              <div className="flex-grow overflow-y-auto">
+                <ChatList />
+              </div>
+            </div>
+          </div>
           
           <main className="flex-1 p-6 overflow-auto">
             <div className="max-w-4xl mx-auto">
               <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">نظام المحادثات</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold">نظام المحادثات</h1>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="md:hidden ml-2"
+                    onClick={() => setShowChannels(!showChannels)}
+                  >
+                    {showChannels ? 'عرض المحادثات' : 'عرض القنوات'}
+                  </Button>
+                </div>
                 <div className="flex gap-2">
                   <Button onClick={() => toast.info("عرض المستخدمين النشطين")}>
                     <Users className="h-4 w-4 ml-2" />
@@ -115,7 +151,7 @@ const Chat = () => {
                         variant="outline" 
                         size="sm" 
                         className="mt-4"
-                        onClick={() => toast.info("تم الانضمام إلى القنوات العامة")}
+                        onClick={() => setShowChannels(true)}
                       >
                         استعرض القنوات
                       </Button>
