@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { clientsData } from "@/data/clients-data";
@@ -9,6 +8,7 @@ import { ClientsHeader } from "@/components/clients/ClientsHeader";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DesignCard from "@/components/DesignCard";
+import PostCard from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -68,7 +68,9 @@ const postsData = [
     likes: 45,
     comments: 12,
     shares: 8,
-    clientId: 1
+    clientId: 1,
+    date: "2023/05/05",
+    author: "شركة الوفق الأصفر"
   },
   {
     id: 2,
@@ -80,7 +82,9 @@ const postsData = [
     likes: 32,
     comments: 5,
     shares: 15,
-    clientId: 1
+    clientId: 1,
+    date: "2023/06/10",
+    author: "شركة الوفق الأصفر"
   },
   {
     id: 3,
@@ -92,7 +96,9 @@ const postsData = [
     likes: 0,
     comments: 0,
     shares: 0,
-    clientId: 2
+    clientId: 2,
+    date: "2023/04/10",
+    author: "مؤسسة نجمة الشمال"
   }
 ];
 
@@ -165,6 +171,17 @@ const Clients = () => {
   const getDesignCountByStatus = (status: string) => {
     return filteredDesigns.filter(d => d.category === status).length;
   };
+
+  // تصفية المنشورات
+  const [postSearchQuery, setPostSearchQuery] = useState("");
+  const [selectedPostCategory, setSelectedPostCategory] = useState("الكل");
+  
+  // تصفية المنشورات بناءً على البحث والفئة المحددة
+  const filteredPosts = getClientPosts(clientId ? parseInt(clientId) : undefined).filter(post => 
+    (post.title.includes(postSearchQuery) || 
+    post.author.includes(postSearchQuery)) && 
+    (selectedPostCategory === "الكل" || post.status === selectedPostCategory)
+  );
 
   return (
     <div className="min-h-screen flex w-full" dir="rtl">
@@ -361,74 +378,16 @@ const Clients = () => {
                       <Input 
                         className="pl-10 pr-4 py-2 w-full text-right" 
                         placeholder="ابحث عن منشور..." 
+                        value={postSearchQuery}
+                        onChange={(e) => setPostSearchQuery(e.target.value)}
                       />
                     </div>
                   </div>
                   
                   <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {getClientPosts(clientId ? parseInt(clientId) : undefined).length > 0 ? (
-                      getClientPosts(clientId ? parseInt(clientId) : undefined).map(post => (
-                        <Card key={post.id} className="overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer">
-                          <div className="h-48 relative overflow-hidden bg-gray-100">
-                            <img 
-                              src={post.image} 
-                              alt={post.title} 
-                              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                            />
-                            <div className="absolute top-3 left-3">
-                              <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                                post.status === "منشور" 
-                                  ? "bg-green-500 text-white" 
-                                  : post.status === "مجدول" 
-                                    ? "bg-blue-500 text-white" 
-                                    : "bg-gray-500 text-white"
-                              }`}>
-                                {post.status}
-                              </span>
-                            </div>
-                            <div className="absolute top-3 right-3">
-                              <span className="px-2 py-1 rounded-md text-xs font-medium bg-white shadow-sm">
-                                {post.platform}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="p-4">
-                            <div className="mb-2">
-                              <h3 className="text-lg font-semibold">{post.title}</h3>
-                              <p className="text-sm text-gray-500">تاريخ النشر: {post.scheduledDate}</p>
-                            </div>
-                            <div className="flex justify-between border-t pt-3 mt-3">
-                              <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-1">
-                                  <svg className="h-4 w-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-3a5 5 0 100-10 5 5 0 000 10z" />
-                                  </svg>
-                                  <span className="text-sm">{post.likes}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <svg className="h-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3 2a1 1 0 000 2h6a1 1 0 100-2H5zm0 4a1 1 0 000 2h3a1 1 0 100-2H5z" />
-                                  </svg>
-                                  <span className="text-sm">{post.comments}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <svg className="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M15 8a3 3 0 10-6 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
-                                  </svg>
-                                  <span className="text-sm">{post.shares}</span>
-                                </div>
-                              </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-sm"
-                                onClick={() => toast.info(`عرض تفاصيل المنشور: ${post.title}`)}
-                              >
-                                عرض
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
+                    {filteredPosts.length > 0 ? (
+                      filteredPosts.map(post => (
+                        <PostCard key={post.id} post={post} />
                       ))
                     ) : (
                       <div className="col-span-full text-center py-12">

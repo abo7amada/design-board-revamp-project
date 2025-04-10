@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Image, User } from "lucide-react";
+import { Calendar, Image, User, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { 
@@ -11,17 +11,28 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PostProps {
   post: {
     id: number;
     title: string;
-    category: string;
+    category?: string;
     image?: string;
     date: string;
     author: string;
     status: string;
-    hasDesign: boolean;
+    hasDesign?: boolean;
+    scheduledDate?: string;
+    platform?: string;
+    likes?: number;
+    comments?: number;
+    shares?: number;
   };
 }
 
@@ -68,12 +79,30 @@ const PostCard = ({ post: initialPost }: PostProps) => {
   };
 
   const handleCategoryClick = () => {
-    toast.info(`تصفية حسب الفئة: ${post.category}`);
+    toast.info(`تصفية حسب الفئة: ${post.category || post.status}`);
   };
 
   const handlePublishToggle = () => {
     setIsPublished(!isPublished);
     toast.success(isPublished ? "تم إلغاء النشر" : "تم النشر على جميع المنصات");
+  };
+
+  const handleWhatsAppShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Create a more detailed share message with post information
+    const postUrl = `${window.location.origin}/posts/${post.id}`;
+    const shareText = `مشاركة المنشور: ${post.title}\nتم إنشاء المنشور بواسطة: ${post.author}\nفي تاريخ: ${post.date}\nرابط المنشور: ${postUrl}`;
+    
+    // Create a WhatsApp share URL
+    const encodedText = encodeURIComponent(shareText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    
+    // Open WhatsApp in a new tab
+    window.open(whatsappUrl, '_blank');
+    
+    // Show success toast
+    toast.success(`تم فتح واتساب لمشاركة المنشور "${post.title}"`);
   };
 
   return (
@@ -96,14 +125,19 @@ const PostCard = ({ post: initialPost }: PostProps) => {
             <div>
               <div className="flex items-center mb-2">
                 <span 
-                  className={`text-sm px-3 py-1 rounded-md ${getCategoryColor(post.category)} cursor-pointer`}
+                  className={`text-sm px-3 py-1 rounded-md ${getCategoryColor(post.category || post.status)} cursor-pointer`}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCategoryClick();
                   }}
                 >
-                  {post.category}
+                  {post.category || post.status}
                 </span>
+                {post.platform && (
+                  <span className="text-sm px-3 py-1 rounded-md bg-white shadow-sm ml-2">
+                    {post.platform}
+                  </span>
+                )}
               </div>
               <h3 className="text-xl font-semibold">{post.title}</h3>
             </div>
@@ -128,7 +162,7 @@ const PostCard = ({ post: initialPost }: PostProps) => {
           <div className="flex flex-wrap items-center gap-4 text-gray-600 text-sm">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              <span>{post.date}</span>
+              <span>{post.scheduledDate || post.date}</span>
             </div>
             
             <div className="flex items-center gap-1">
@@ -136,7 +170,7 @@ const PostCard = ({ post: initialPost }: PostProps) => {
               <span>{post.author}</span>
             </div>
             
-            {!post.hasDesign && (
+            {!post.hasDesign && !post.image && (
               <div className="flex items-center gap-1">
                 <Image className="h-4 w-4" />
                 <span>لا يوجد تصميم</span>
@@ -144,21 +178,78 @@ const PostCard = ({ post: initialPost }: PostProps) => {
             )}
           </div>
           
-          {post.category === "منشور" && post.status === "معتمد" && (
-            <div className="mt-4 flex items-center" onClick={(e) => e.stopPropagation()}>
-              <input 
-                type="checkbox" 
-                id={`publish-${post.id}`} 
-                className="mr-2"
-                checked={isPublished}
-                onChange={handlePublishToggle}
-              />
-              <label 
-                htmlFor={`publish-${post.id}`} 
-                className="text-sm text-gray-600 cursor-pointer"
+          {(post.category === "منشور" || post.status === "معتمد") && (
+            <div className="mt-4 flex justify-between">
+              <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+                <input 
+                  type="checkbox" 
+                  id={`publish-${post.id}`} 
+                  className="mr-2"
+                  checked={isPublished}
+                  onChange={handlePublishToggle}
+                />
+                <label 
+                  htmlFor={`publish-${post.id}`} 
+                  className="text-sm text-gray-600 cursor-pointer"
+                >
+                  تم النشر على جميع المنصات
+                </label>
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex items-center gap-1 text-gray-600" 
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Share2 className="h-4 w-4" />
+                    <span>مشاركة</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleWhatsAppShare}>
+                    مشاركة عبر واتساب
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+          
+          {post.likes !== undefined && (
+            <div className="flex justify-between border-t pt-3 mt-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <svg className="h-4 w-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-3a5 5 0 100-10 5 5 0 000 10z" />
+                  </svg>
+                  <span className="text-sm">{post.likes}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <svg className="h-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3 2a1 1 0 000 2h6a1 1 0 100-2H5zm0 4a1 1 0 000 2h3a1 1 0 100-2H5z" />
+                  </svg>
+                  <span className="text-sm">{post.comments}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <svg className="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M15 8a3 3 0 10-6 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
+                  </svg>
+                  <span className="text-sm">{post.shares}</span>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast.info(`عرض تفاصيل المنشور: ${post.title}`);
+                }}
               >
-                تم النشر على جميع المنصات
-              </label>
+                عرض
+              </Button>
             </div>
           )}
         </div>
