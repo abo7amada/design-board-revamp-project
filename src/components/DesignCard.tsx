@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Heart, MessageCircle, MoreHorizontal, Bookmark, Share2, Edit, Pencil, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -110,9 +109,20 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
 
   const handleWhatsAppShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Simulate sharing design to WhatsApp
-    toast.success(`تم إرسال رابط التصميم "${design.title}" على واتساب للعميل`);
-    // In a real app, this would use the WhatsApp API to share the design link
+    
+    // Create share text with design title
+    const shareText = `مشاركة التصميم: ${design.title}`;
+    
+    // Create a WhatsApp share URL
+    // Format: https://wa.me/?text=encodedText
+    const encodedText = encodeURIComponent(shareText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    
+    // Open WhatsApp in a new tab
+    window.open(whatsappUrl, '_blank');
+    
+    // Show success toast
+    toast.success(`تم فتح واتساب لمشاركة التصميم "${design.title}"`);
   };
   
   // دالة لتحديد لون الفئة
