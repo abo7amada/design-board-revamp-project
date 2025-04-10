@@ -1,172 +1,243 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { PlusCircle, Search, Grid, LayoutGrid, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Bell, Calendar, LayoutGrid, PencilRuler, Search, Settings, BarChart, Users, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import DesignCard from "@/components/DesignCard";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar";
+import { Card } from "@/components/ui/card";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@/components/ui/pagination";
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import PostCard from "@/components/PostCard";
 
-const designs = [
+// Sample data
+const posts = [
   {
     id: 1,
-    title: "Modern Website Homepage",
-    category: "Web Design",
+    title: "إطلاق منتج جديد",
+    category: "منشور",
     image: "/placeholder.svg",
-    date: "2025-04-01",
-    author: "Sarah Johnson",
-    likes: 42,
-    comments: 8
+    date: "2023/5/15",
+    author: "شركة الأفق الأخضر",
+    status: "معتمد",
+    hasDesign: true
   },
   {
     id: 2,
-    title: "Mobile App Interface",
-    category: "UI/UX",
+    title: "ورشة عمل تقنية",
+    category: "مجدول",
     image: "/placeholder.svg",
-    date: "2025-03-28",
-    author: "Alex Chen",
-    likes: 37,
-    comments: 12
+    date: "2023/6/20",
+    author: "شركة الأفق الأخضر",
+    status: "قيد المراجعة",
+    hasDesign: true
   },
   {
     id: 3,
-    title: "E-commerce Product Page",
-    category: "Web Design",
+    title: "عرض موسم الصيف",
+    category: "مسودة",
     image: "/placeholder.svg",
-    date: "2025-03-25",
-    author: "Miguel Rodriguez",
-    likes: 28,
-    comments: 6
+    date: "2023/7/1",
+    author: "مؤسسة نجمة الشمال",
+    status: "مسودة",
+    hasDesign: false
   },
   {
     id: 4,
-    title: "Dashboard Analytics",
-    category: "Data Visualization",
+    title: "مقابلة مع المدير التنفيذي",
+    category: "مسودة",
     image: "/placeholder.svg",
-    date: "2025-03-22",
-    author: "Emily Wong",
-    likes: 53,
-    comments: 15
-  },
-  {
-    id: 5,
-    title: "Brand Identity System",
-    category: "Branding",
-    image: "/placeholder.svg",
-    date: "2025-03-20",
-    author: "David Pierce",
-    likes: 64,
-    comments: 9
-  },
-  {
-    id: 6,
-    title: "Social Media Campaign",
-    category: "Marketing",
-    image: "/placeholder.svg",
-    date: "2025-03-15",
-    author: "Lisa Chen",
-    likes: 31,
-    comments: 7
+    date: "2023/8/5",
+    author: "شركة الأفق الأخضر",
+    status: "مسودة",
+    hasDesign: false
   }
 ];
 
 const Index = () => {
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Filter designs based on search query
-  const filteredDesigns = designs.filter(design => 
-    design.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    design.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    design.author.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter posts based on search query
+  const filteredPosts = posts.filter(post => 
+    post.title.includes(searchQuery) || 
+    post.category.includes(searchQuery) ||
+    post.author.includes(searchQuery)
   );
 
+  // Group posts by category
+  const groupedPosts = filteredPosts.reduce((acc, post) => {
+    if (!acc[post.category]) {
+      acc[post.category] = [];
+    }
+    acc[post.category].push(post);
+    return acc;
+  }, {} as Record<string, typeof posts>);
+
+  const categories = {
+    "منشور": { count: groupedPosts["منشور"]?.length || 0, color: "bg-purple-100" },
+    "مجدول": { count: groupedPosts["مجدول"]?.length || 0, color: "bg-blue-100" },
+    "مسودة": { count: groupedPosts["مسودة"]?.length || 0, color: "bg-gray-100" }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Design Board</h1>
-            <p className="text-gray-600 mt-1">Organize and explore your creative design projects</p>
-          </div>
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Design
-          </Button>
-        </div>
-
-        {/* Filter and Search */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input 
-              className="pl-10 pr-4 py-2 w-full" 
-              placeholder="Search designs, categories, or authors..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex gap-2">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filter
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>All Designs</DropdownMenuItem>
-                <DropdownMenuItem>Web Design</DropdownMenuItem>
-                <DropdownMenuItem>UI/UX</DropdownMenuItem>
-                <DropdownMenuItem>Branding</DropdownMenuItem>
-                <DropdownMenuItem>Marketing</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button 
-              variant="outline" 
-              className={viewMode === "grid" ? "bg-gray-100" : ""} 
-              onClick={() => setViewMode("grid")}
-            >
-              <Grid className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="outline" 
-              className={viewMode === "list" ? "bg-gray-100" : ""} 
-              onClick={() => setViewMode("list")}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Design Cards Grid */}
-        <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
-          {filteredDesigns.map((design) => (
-            <DesignCard 
-              key={design.id} 
-              design={design} 
-              viewMode={viewMode} 
-            />
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredDesigns.length === 0 && (
-          <Card className="mt-8">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="rounded-full bg-blue-50 p-4 mb-4">
-                <Search className="h-8 w-8 text-blue-500" />
+    <div className="min-h-screen flex" dir="rtl">
+      {/* Sidebar */}
+      <SidebarProvider>
+        <aside className="h-screen sticky top-0 w-64 border-l bg-white hidden md:block">
+          <div className="flex flex-col h-full">
+            <div className="p-4 border-b">
+              <h2 className="text-xl font-bold text-green-700">كانفاس التواصل</h2>
+            </div>
+            
+            <nav className="flex-1 overflow-y-auto p-4">
+              <ul className="space-y-6">
+                <li>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700">
+                    <Home className="h-5 w-5" />
+                    <span className="text-lg">الرئيسية</span>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700">
+                    <LayoutGrid className="h-5 w-5" />
+                    <span className="text-lg">لوحة المنشورات</span>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" className="w-full justify-start gap-2 text-green-700">
+                    <PencilRuler className="h-5 w-5" />
+                    <span className="text-lg">لوحة التصاميم</span>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700">
+                    <Calendar className="h-5 w-5" />
+                    <span className="text-lg">التقويم</span>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700">
+                    <BarChart className="h-5 w-5" />
+                    <span className="text-lg">الإحصائيات</span>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700">
+                    <Users className="h-5 w-5" />
+                    <span className="text-lg">العملاء</span>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700">
+                    <Settings className="h-5 w-5" />
+                    <span className="text-lg">الإعدادات</span>
+                  </Button>
+                </li>
+              </ul>
+            </nav>
+            
+            <div className="p-4 border-t">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-gray-200 relative overflow-hidden">
+                    <img src="/lovable-uploads/10fc914b-5004-4050-8edd-e2273f4b215d.png" alt="Profile" className="h-full w-full object-cover" />
+                  </div>
+                </div>
+                <div className="mr-3">
+                  <p className="text-sm font-medium">أحمد محمد</p>
+                </div>
               </div>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">No designs found</h3>
-              <p className="text-gray-500 text-center max-w-md">
-                We couldn't find any designs that match your search criteria. Try adjusting your search or filters.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            </div>
+          </div>
+        </aside>
+        
+        {/* Main content */}
+        <main className="flex-1 bg-white">
+          {/* Header */}
+          <header className="bg-white border-b py-2 px-4 flex justify-between items-center">
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Bell className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">2</span>
+              </Button>
+            </div>
+            
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-green-700 mr-2">لوحة إدارة التصاميم</h1>
+              <Button variant="ghost" size="icon" className="ml-2">
+                <span className="sr-only">Close</span>
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5">
+                  <path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                </svg>
+              </Button>
+            </div>
+          </header>
+          
+          {/* Content */}
+          <div className="p-6">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-right mb-8">لوحة المنشورات</h2>
+              
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <Button className="bg-green-600 hover:bg-green-700 gap-2">
+                  <span>إضافة منشور</span>
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                    <path d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                  </svg>
+                </Button>
+                
+                <div className="flex-1 flex gap-4">
+                  <div className="relative flex-grow">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input 
+                      className="pl-10 pr-4 py-2 w-full text-right" 
+                      placeholder="ابحث عن منشور..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  
+                  <select className="bg-white border border-gray-300 rounded-md px-4 py-2">
+                    <option>كل العملاء</option>
+                  </select>
+                  
+                  <select className="bg-white border border-gray-300 rounded-md px-4 py-2">
+                    <option>جميع الحالات</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Object.entries(categories).map(([category, details]) => (
+                  <Card key={category} className={`${details.color} rounded-lg overflow-hidden`}>
+                    <div className="p-5 flex justify-between items-center">
+                      <div className="rounded-md px-2 py-1 bg-opacity-80" style={{ backgroundColor: category === "منشور" ? "#b083f8" : category === "مجدول" ? "#4e97f7" : "#6b7280" }}>
+                        <span className="text-white font-medium text-sm">{details.count}</span>
+                      </div>
+                      <h3 className="text-xl font-bold">{category}</h3>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              {Object.entries(groupedPosts).map(([category, posts]) => (
+                <div key={category} className="space-y-4">
+                  {posts.map(post => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              ))}
+              
+              {filteredPosts.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">لا توجد منشورات متطابقة مع معايير البحث</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      </SidebarProvider>
     </div>
   );
 };

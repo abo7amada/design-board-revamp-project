@@ -27,7 +27,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { 
+    return date.toLocaleDateString("ar-SA", { 
       month: "short", 
       day: "numeric",
       year: "numeric"
@@ -51,7 +51,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
             alt={design.title} 
             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
           />
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 left-3">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -81,7 +81,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
         </CardHeader>
         
         <CardContent className="p-4 pt-0 pb-2 flex-grow">
-          <p className="text-sm text-gray-500">Created by <span className="font-medium text-gray-700">{design.author}</span> on {formatDate(design.date)}</p>
+          <p className="text-sm text-gray-500">تم الإنشاء بواسطة <span className="font-medium text-gray-700">{design.author}</span> في {formatDate(design.date)}</p>
         </CardContent>
         
         <CardFooter className="p-4 pt-2 flex justify-between border-t border-gray-100">
@@ -106,7 +106,7 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
           </div>
           
           <Button variant="outline" size="sm" className="text-sm">
-            View
+            عرض
           </Button>
         </CardFooter>
       </div>
