@@ -107,6 +107,13 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
     navigate(`/chat`, { state: { designId: design.id, designTitle: design.title } });
     toast.success(`الانتقال إلى المحادثات حول التصميم: ${design.title}`);
   };
+
+  const handleWhatsAppShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Simulate sharing design to WhatsApp
+    toast.success(`تم إرسال رابط التصميم "${design.title}" على واتساب للعميل`);
+    // In a real app, this would use the WhatsApp API to share the design link
+  };
   
   // دالة لتحديد لون الفئة
   const getCategoryColor = (category: string) => {
@@ -226,6 +233,27 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                     <MessageCircle className="h-4 w-4 ml-2" />
                     محادثة
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    handleWhatsAppShare(e);
+                  }}>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-4 w-4 ml-2" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
+                      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Z" />
+                      <path d="M14 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Z" />
+                      <path d="M12 17c3.5 0 5-2 5-5" />
+                    </svg>
+                    إرسال عبر واتساب
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -266,7 +294,12 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
             
             <div className="flex items-center gap-2">
               {design.category === "معتمد" && (
-                <Button variant="outline" size="sm" className="text-sm bg-green-50" onClick={handlePublish}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-sm bg-green-50" 
+                  onClick={handlePublish}
+                >
                   نشر
                 </Button>
               )}

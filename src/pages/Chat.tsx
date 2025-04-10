@@ -5,14 +5,16 @@ import ChatList from "@/components/chat/ChatList";
 import MessagePanel from "@/components/chat/MessagePanel";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Users } from "lucide-react";
+import { MessageSquare, Users, WhatsappIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "react-router-dom";
+import WhatsappIntegrationPanel from "@/components/chat/WhatsappIntegrationPanel";
 
 const Chat = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [activeDesign, setActiveDesign] = useState<{id: number, title: string} | null>(null);
+  const [isWhatsappPanelOpen, setIsWhatsappPanelOpen] = useState(false);
   const location = useLocation();
   
   // Listen for edit request tab events
@@ -47,6 +49,10 @@ const Chat = () => {
     setActiveDesign({id: designId, title: designTitle});
     setIsPanelOpen(true);
   };
+
+  const handleOpenWhatsappPanel = () => {
+    setIsWhatsappPanelOpen(true);
+  };
   
   return (
     <SidebarProvider>
@@ -68,6 +74,28 @@ const Chat = () => {
                   <Button variant="outline" onClick={() => handleOpenPanel(1, "إطلاق منتج جديد")}>
                     <MessageSquare className="h-4 w-4 ml-2" />
                     مناقشة تصميم
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={handleOpenWhatsappPanel}
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-4 w-4 ml-2" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
+                      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Z" />
+                      <path d="M14 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Z" />
+                      <path d="M12 17c3.5 0 5-2 5-5" />
+                    </svg>
+                    تكامل واتساب
                   </Button>
                 </div>
               </div>
@@ -138,6 +166,38 @@ const Chat = () => {
                     ))}
                   </div>
                 </div>
+
+                <div className="border rounded-lg p-6 bg-green-50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-green-600 p-2 rounded-full">
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        className="h-6 w-6 text-white" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
+                        <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Z" />
+                        <path d="M14 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Z" />
+                        <path d="M12 17c3.5 0 5-2 5-5" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold">تكامل الواتساب</h2>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    يمكنك الآن مراقبة واستقبال طلبات تعديل التصاميم من الواتساب مباشرة في المنصة.
+                  </p>
+                  <Button 
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={handleOpenWhatsappPanel}
+                  >
+                    عرض طلبات الواتساب
+                  </Button>
+                </div>
               </div>
             </div>
           </main>
@@ -150,6 +210,11 @@ const Chat = () => {
               designTitle={activeDesign.title}
             />
           )}
+
+          <WhatsappIntegrationPanel 
+            isOpen={isWhatsappPanelOpen} 
+            onClose={() => setIsWhatsappPanelOpen(false)} 
+          />
         </div>
       </div>
     </SidebarProvider>
