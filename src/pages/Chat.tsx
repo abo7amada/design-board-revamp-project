@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import ChatList from "@/components/chat/ChatList";
 import MessagePanel from "@/components/chat/MessagePanel";
@@ -7,11 +7,41 @@ import { AppSidebar } from "@/components/shared/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Users } from "lucide-react";
 import { toast } from "sonner";
+import { useLocation } from "react-router-dom";
 
 const Chat = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [activeDesign, setActiveDesign] = useState<{id: number, title: string} | null>(null);
+  const location = useLocation();
+  
+  // Listen for edit request tab events
+  useEffect(() => {
+    const handleEditRequestTab = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && customEvent.detail.designId) {
+        console.log("Opening edit request tab for design:", customEvent.detail.designId);
+        // Handle any additional actions if needed
+      }
+    };
+    
+    document.addEventListener('openEditRequestTab', handleEditRequestTab);
+    
+    return () => {
+      document.removeEventListener('openEditRequestTab', handleEditRequestTab);
+    };
+  }, []);
+  
+  // Handle location state for design discussions
+  useEffect(() => {
+    if (location.state && location.state.designId && location.state.designTitle) {
+      setActiveDesign({
+        id: location.state.designId,
+        title: location.state.designTitle
+      });
+      setIsPanelOpen(true);
+    }
+  }, [location.state]);
   
   const handleOpenPanel = (designId: number, designTitle: string) => {
     setActiveDesign({id: designId, title: designTitle});

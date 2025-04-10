@@ -74,6 +74,17 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
     toast.info(`فتح المحادثة حول التصميم: ${design.title}`);
   };
   
+  const handleEditRequest = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMessagePanelOpen(true);
+    setTimeout(() => {
+      // Trigger the edit-request tab after the message panel opens
+      const event = new CustomEvent('openEditRequestTab', { detail: { designId: design.id } });
+      document.dispatchEvent(event);
+    }, 100);
+    toast.info(`إنشاء طلب تعديل للتصميم: ${design.title}`);
+  };
+  
   const handlePublish = (e: React.MouseEvent) => {
     e.stopPropagation();
     console.log("فتح نافذة النشر للتصميم:", design.title);
@@ -82,15 +93,8 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
   
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("تعديل التصميم:", design.title);
-    toast.success(`تعديل التصميم: ${design.title}`);
-    
-    // In a real app, we would navigate to the edit page
-    // For now, we'll simulate navigation by showing a toast
-    toast.success(`تم الانتقال إلى صفحة تحرير التصميم: ${design.title}`);
-    
-    // Example of what would happen in a full app:
-    // navigate(`/edit-design/${design.id}`);
+    // Instead of just showing a toast, now we're opening the edit request panel
+    handleEditRequest(e);
   };
   
   const handleStatusChange = (newStatus: string) => {
@@ -203,10 +207,10 @@ const DesignCard = ({ design, viewMode }: DesignCardProps) => {
                 <DropdownMenuContent align="end" className="bg-white">
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
-                    handleEdit(e);
+                    handleEditRequest(e);
                   }}>
                     <Edit className="h-4 w-4 ml-2" />
-                    تحرير
+                    طلب تعديل
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
