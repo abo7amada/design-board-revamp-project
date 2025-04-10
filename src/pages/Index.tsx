@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Calendar, LayoutGrid, PencilRuler, Search, Settings, BarChart, Users, Home, Plus } from "lucide-react";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PostCard from "@/components/PostCard";
 
 // بيانات افتراضية
@@ -141,10 +142,12 @@ const Index = () => {
                   </Button>
                 </li>
                 <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على العملاء")}>
-                    <Users className="h-5 w-5" />
-                    <span className="text-lg">العملاء</span>
-                  </Button>
+                  <Link to="/clients">
+                    <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700">
+                      <Users className="h-5 w-5" />
+                      <span className="text-lg">العملاء</span>
+                    </Button>
+                  </Link>
                 </li>
                 <li>
                   <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على الإعدادات")}>

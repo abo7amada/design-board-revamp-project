@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { clientsData } from "@/data/clients-data";
 import { ClientsTable } from "@/components/clients/ClientsTable";
@@ -10,10 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DesignCard from "@/components/DesignCard";
 import PostCard from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { ArrowRight, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 
 // بيانات افتراضية للتصاميم
@@ -70,7 +71,8 @@ const postsData = [
     shares: 8,
     clientId: 1,
     date: "2023/05/05",
-    author: "شركة الوفق الأصفر"
+    author: "شركة الوفق الأصفر",
+    hasDesign: true
   },
   {
     id: 2,
@@ -84,7 +86,8 @@ const postsData = [
     shares: 15,
     clientId: 1,
     date: "2023/06/10",
-    author: "شركة الوفق الأصفر"
+    author: "شركة الوفق الأصفر",
+    hasDesign: true
   },
   {
     id: 3,
@@ -98,7 +101,8 @@ const postsData = [
     shares: 0,
     clientId: 2,
     date: "2023/04/10",
-    author: "مؤسسة نجمة الشمال"
+    author: "مؤسسة نجمة الشمال",
+    hasDesign: false
   }
 ];
 
@@ -119,6 +123,18 @@ const Clients = () => {
   const [selectedDesignCategory, setSelectedDesignCategory] = useState("الكل");
   const navigate = useNavigate();
   const { clientId } = useParams<{ clientId: string }>();
+  const location = useLocation();
+
+  // تحديد التبويب النشط بناءً على المسار
+  useEffect(() => {
+    if (location.pathname.includes('/designs')) {
+      setActiveTab("designs");
+    } else if (location.pathname.includes('/posts')) {
+      setActiveTab("posts");
+    } else if (clientId) {
+      setActiveTab("clients");
+    }
+  }, [location.pathname, clientId]);
 
   // تصفية العملاء بناءً على البحث والحالة والقطاع
   const filteredClients = clientsData.filter(client => 
@@ -183,6 +199,14 @@ const Clients = () => {
     (selectedPostCategory === "الكل" || post.status === selectedPostCategory)
   );
 
+  // الحصول على اسم العميل الحالي
+  const currentClient = clientId ? clientsData.find(c => c.id === parseInt(clientId)) : null;
+  
+  // التنقل لصفحة رئيسية العملاء
+  const navigateToClients = () => {
+    navigate("/clients");
+  };
+
   return (
     <div className="min-h-screen flex w-full" dir="rtl">
       <SidebarProvider defaultOpen={true}>
@@ -195,142 +219,174 @@ const Clients = () => {
           
           {/* Content */}
           <div className="p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full mb-6">
-                <TabsTrigger value="clients" className="flex-1">العملاء</TabsTrigger>
-                <TabsTrigger value="designs" className="flex-1">التصاميم</TabsTrigger>
-                <TabsTrigger value="posts" className="flex-1">المنشورات</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="clients">
-                <div className="mb-8">
-                  <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-                    <h2 className="text-2xl font-bold mb-4 md:mb-0">قائمة العملاء</h2>
-                    
-                    <div className="flex flex-col md:flex-row gap-4">
-                      <ClientForm />
-                    </div>
+            {clientId && (
+              <div className="mb-6 flex items-center">
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center gap-2 mb-2" 
+                  onClick={navigateToClients}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  <span>العودة لقائمة العملاء</span>
+                </Button>
+                
+                {currentClient && (
+                  <div className="flex flex-col mr-4 border-r pr-4">
+                    <h1 className="text-xl font-bold">{currentClient.name}</h1>
+                    <p className="text-sm text-gray-500">{currentClient.email}</p>
                   </div>
-                  
-                  <ClientsFilter 
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    selectedStatus={selectedStatus}
-                    setSelectedStatus={setSelectedStatus}
-                    selectedSector={selectedSector}
-                    setSelectedSector={setSelectedSector}
-                    activeTab="all"
-                    setActiveTab={() => {}}
-                  />
-                  
-                  <ClientsTable filteredClients={filteredClients} />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="designs">
-                <div className="mb-8">
-                  <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-                    <h2 className="text-2xl font-bold mb-4 md:mb-0">
-                      {clientId 
-                        ? `تصاميم العميل: ${clientsData.find(c => c.id === parseInt(clientId))?.name || 'العميل'}`
-                        : 'لوحة التصاميم'}
-                    </h2>
-                    
-                    <div className="flex flex-col md:flex-row gap-4">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex items-center gap-2" 
-                        onClick={toggleViewMode}
-                      >
-                        {viewMode === "grid" ? (
-                          <>
-                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
-                              <path d="M1 1H14V3H1V1ZM1 4H14V6H1V4ZM1 7H14V9H1V7ZM1 10H14V12H1V10ZM1 13H14V15H1V13Z" fill="currentColor"></path>
-                            </svg>
-                            <span>عرض قائمة</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
-                              <path d="M12.5 2H8V7H13V2.5C13 2.22386 12.7761 2 12.5 2ZM13 8H8V13H12.5C12.7761 13 13 12.7761 13 12.5V8ZM7 2H2.5C2.22386 2 2 2.22386 2 2.5V7H7V2ZM2 8V12.5C2 12.7761 2.22386 13 2.5 13H7V8H2ZM2.5 1H12.5C13.3284 1 14 1.67157 14 2.5V12.5C14 13.3284 13.3284 14 12.5 14H2.5C1.67157 14 1 13.3284 1 12.5V2.5C1 1.67157 1.67157 1 2.5 1Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
-                            </svg>
-                            <span>عرض شبكة</span>
-                          </>
-                        )}
-                      </Button>
-                      <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={handleAddDesign}>
-                        <span>إضافة تصميم</span>
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input 
-                        className="pl-10 pr-4 py-2 w-full text-right" 
-                        placeholder="ابحث عن تصميم..." 
-                        value={designSearchQuery}
-                        onChange={(e) => setDesignSearchQuery(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    {Object.entries(designStatuses).map(([status, details]) => (
-                      <Card 
-                        key={status} 
-                        className={`${details.color} rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md ${selectedDesignCategory === status ? `ring-2 ${details.borderColor}` : ''}`}
-                        onClick={() => handleFilterChange(status)}
-                      >
-                        <CardContent className="p-6">
-                          <div className="flex justify-between items-center">
-                            <span className={`text-xl font-bold ${details.textColor}`}>{status}</span>
-                            <span className="px-2 py-1 rounded-full bg-white">
-                              {getDesignCountByStatus(status)}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  <div className="grid gap-6 grid-cols-1">
-                    {viewMode === "list" ? (
-                      filteredDesigns.length > 0 ? (
-                        filteredDesigns.map(design => (
-                          <DesignCard 
-                            key={design.id} 
-                            design={design} 
-                            viewMode="list" 
-                            onStatusChange={handleDesignStatusChange}
-                          />
-                        ))
-                      ) : (
-                        <div className="col-span-full text-center py-12">
-                          <p className="text-gray-500 text-lg">لا توجد تصاميم متطابقة مع معايير البحث</p>
-                          <Button 
-                            variant="link" 
-                            className="mt-4 text-green-600"
-                            onClick={() => {
-                              setDesignSearchQuery("");
-                              setSelectedDesignCategory("الكل");
-                            }}
-                          >
-                            عرض جميع التصاميم
-                          </Button>
+                )}
+              </div>
+            )}
+            
+            {clientId ? (
+              <Tabs value={activeTab} onValueChange={(tab) => {
+                setActiveTab(tab);
+                if (tab === "clients") {
+                  navigate(`/clients/${clientId}`);
+                } else if (tab === "designs") {
+                  navigate(`/clients/${clientId}/designs`);
+                } else if (tab === "posts") {
+                  navigate(`/clients/${clientId}/posts`);
+                }
+              }} className="w-full">
+                <TabsList className="w-full mb-6">
+                  <TabsTrigger value="clients" className="flex-1">معلومات العميل</TabsTrigger>
+                  <TabsTrigger value="designs" className="flex-1">التصاميم</TabsTrigger>
+                  <TabsTrigger value="posts" className="flex-1">المنشورات</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="clients">
+                  <div className="mb-8">
+                    {/* عرض معلومات العميل */}
+                    <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+                      <h2 className="text-xl font-bold mb-4">معلومات العميل</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-gray-500 mb-1">الاسم</p>
+                          <p className="font-semibold">{currentClient?.name}</p>
                         </div>
-                      )
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredDesigns.length > 0 ? (
+                        <div>
+                          <p className="text-gray-500 mb-1">البريد الإلكتروني</p>
+                          <p className="font-semibold">{currentClient?.email}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-1">رقم الهاتف</p>
+                          <p className="font-semibold">{currentClient?.phone || "غير متوفر"}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-1">القطاع</p>
+                          <p className="font-semibold">{currentClient?.sector || "غير متوفر"}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-1">عدد المشاريع</p>
+                          <p className="font-semibold">{currentClient?.projectsCount || 0}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-1">آخر نشاط</p>
+                          <p className="font-semibold">{currentClient?.lastActivity || "غير متوفر"}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 flex gap-4">
+                        <ClientForm 
+                          isEdit={true} 
+                          clientData={{
+                            id: currentClient?.id || 0,
+                            name: currentClient?.name || "",
+                            email: currentClient?.email || "",
+                            phone: currentClient?.phone || "",
+                            sector: currentClient?.sector || "",
+                            contact: currentClient?.contact || ""
+                          }}
+                          onSuccess={(data) => toast.success(`تم تحديث بيانات العميل: ${data.name}`)}
+                        />
+                        
+                        <Button variant="outline" className="gap-2">
+                          <span>إضافة ملاحظة</span>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="designs">
+                  <div className="mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                      <h2 className="text-2xl font-bold mb-4 md:mb-0">
+                        تصاميم {currentClient?.name}
+                      </h2>
+                      
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex items-center gap-2" 
+                          onClick={toggleViewMode}
+                        >
+                          {viewMode === "grid" ? (
+                            <>
+                              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                                <path d="M1 1H14V3H1V1ZM1 4H14V6H1V4ZM1 7H14V9H1V7ZM1 10H14V12H1V10ZM1 13H14V15H1V13Z" fill="currentColor"></path>
+                              </svg>
+                              <span>عرض قائمة</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                                <path d="M12.5 2H8V7H13V2.5C13 2.22386 12.7761 2 12.5 2ZM13 8H8V13H12.5C12.7761 13 13 12.7761 13 12.5V8ZM7 2H2.5C2.22386 2 2 2.22386 2 2.5V7H7V2ZM2 8V12.5C2 12.7761 2.22386 13 2.5 13H7V8H2ZM2.5 1H12.5C13.3284 1 14 1.67157 14 2.5V12.5C14 13.3284 13.3284 14 12.5 14H2.5C1.67157 14 1 13.3284 1 12.5V2.5C1 1.67157 1.67157 1 2.5 1Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                              </svg>
+                              <span>عرض شبكة</span>
+                            </>
+                          )}
+                        </Button>
+                        <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={handleAddDesign}>
+                          <span>إضافة تصميم</span>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                      <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input 
+                          className="pl-10 pr-4 py-2 w-full text-right" 
+                          placeholder="ابحث عن تصميم..." 
+                          value={designSearchQuery}
+                          onChange={(e) => setDesignSearchQuery(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      {Object.entries(designStatuses).map(([status, details]) => (
+                        <Card 
+                          key={status} 
+                          className={`${details.color} rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md ${selectedDesignCategory === status ? `ring-2 ${details.borderColor}` : ''}`}
+                          onClick={() => handleFilterChange(status)}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-center">
+                              <span className={`text-xl font-bold ${details.textColor}`}>{status}</span>
+                              <span className="px-2 py-1 rounded-full bg-white">
+                                {getDesignCountByStatus(status)}
+                              </span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    
+                    <div className="grid gap-6 grid-cols-1">
+                      {viewMode === "list" ? (
+                        filteredDesigns.length > 0 ? (
                           filteredDesigns.map(design => (
                             <DesignCard 
                               key={design.id} 
                               design={design} 
-                              viewMode="grid" 
+                              viewMode="list" 
                               onStatusChange={handleDesignStatusChange}
                             />
                           ))
@@ -348,63 +404,295 @@ const Clients = () => {
                               عرض جميع التصاميم
                             </Button>
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="posts">
-                <div className="mb-8">
-                  <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-                    <h2 className="text-2xl font-bold mb-4 md:mb-0">
-                      {clientId 
-                        ? `منشورات العميل: ${clientsData.find(c => c.id === parseInt(clientId))?.name || 'العميل'}`
-                        : 'لوحة المنشورات'}
-                    </h2>
-                    
-                    <div className="flex flex-col md:flex-row gap-4">
-                      <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={() => navigate("/add-post")}>
-                        <span>إضافة منشور</span>
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                        )
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {filteredDesigns.length > 0 ? (
+                            filteredDesigns.map(design => (
+                              <DesignCard 
+                                key={design.id} 
+                                design={design} 
+                                viewMode="grid" 
+                                onStatusChange={handleDesignStatusChange}
+                              />
+                            ))
+                          ) : (
+                            <div className="col-span-full text-center py-12">
+                              <p className="text-gray-500 text-lg">لا توجد تصاميم متطابقة مع معايير البحث</p>
+                              <Button 
+                                variant="link" 
+                                className="mt-4 text-green-600"
+                                onClick={() => {
+                                  setDesignSearchQuery("");
+                                  setSelectedDesignCategory("الكل");
+                                }}
+                              >
+                                عرض جميع التصاميم
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  
-                  <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input 
-                        className="pl-10 pr-4 py-2 w-full text-right" 
-                        placeholder="ابحث عن منشور..." 
-                        value={postSearchQuery}
-                        onChange={(e) => setPostSearchQuery(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredPosts.length > 0 ? (
-                      filteredPosts.map(post => (
-                        <PostCard key={post.id} post={post} />
-                      ))
-                    ) : (
-                      <div className="col-span-full text-center py-12">
-                        <p className="text-gray-500 text-lg">لا توجد منشورات متاحة</p>
-                        <Button 
-                          variant="link" 
-                          className="mt-4 text-green-600"
-                          onClick={() => navigate("/add-post")}
-                        >
-                          إضافة منشور جديد
+                </TabsContent>
+                
+                <TabsContent value="posts">
+                  <div className="mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                      <h2 className="text-2xl font-bold mb-4 md:mb-0">
+                        منشورات {currentClient?.name}
+                      </h2>
+                      
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={() => navigate("/add-post")}>
+                          <span>إضافة منشور</span>
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
-                    )}
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                      <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input 
+                          className="pl-10 pr-4 py-2 w-full text-right" 
+                          placeholder="ابحث عن منشور..." 
+                          value={postSearchQuery}
+                          onChange={(e) => setPostSearchQuery(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+                      {filteredPosts.length > 0 ? (
+                        filteredPosts.map(post => (
+                          <PostCard key={post.id} post={post} />
+                        ))
+                      ) : (
+                        <div className="col-span-full text-center py-12">
+                          <p className="text-gray-500 text-lg">لا توجد منشورات متاحة</p>
+                          <Button 
+                            variant="link" 
+                            className="mt-4 text-green-600"
+                            onClick={() => navigate("/add-post")}
+                          >
+                            إضافة منشور جديد
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="w-full mb-6">
+                  <TabsTrigger value="clients" className="flex-1">العملاء</TabsTrigger>
+                  <TabsTrigger value="designs" className="flex-1">التصاميم</TabsTrigger>
+                  <TabsTrigger value="posts" className="flex-1">المنشورات</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="clients">
+                  <div className="mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                      <h2 className="text-2xl font-bold mb-4 md:mb-0">قائمة العملاء</h2>
+                      
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <ClientForm />
+                      </div>
+                    </div>
+                    
+                    <ClientsFilter 
+                      searchQuery={searchQuery}
+                      setSearchQuery={setSearchQuery}
+                      selectedStatus={selectedStatus}
+                      setSelectedStatus={setSelectedStatus}
+                      selectedSector={selectedSector}
+                      setSelectedSector={setSelectedSector}
+                      activeTab="all"
+                      setActiveTab={() => {}}
+                    />
+                    
+                    <ClientsTable filteredClients={filteredClients} />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="designs">
+                  <div className="mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                      <h2 className="text-2xl font-bold mb-4 md:mb-0">
+                        لوحة التصاميم
+                      </h2>
+                      
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex items-center gap-2" 
+                          onClick={toggleViewMode}
+                        >
+                          {viewMode === "grid" ? (
+                            <>
+                              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                                <path d="M1 1H14V3H1V1ZM1 4H14V6H1V4ZM1 7H14V9H1V7ZM1 10H14V12H1V10ZM1 13H14V15H1V13Z" fill="currentColor"></path>
+                              </svg>
+                              <span>عرض قائمة</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                                <path d="M12.5 2H8V7H13V2.5C13 2.22386 12.7761 2 12.5 2ZM13 8H8V13H12.5C12.7761 13 13 12.7761 13 12.5V8ZM7 2H2.5C2.22386 2 2 2.22386 2 2.5V7H7V2ZM2 8V12.5C2 12.7761 2.22386 13 2.5 13H7V8H2ZM2.5 1H12.5C13.3284 1 14 1.67157 14 2.5V12.5C14 13.3284 13.3284 14 12.5 14H2.5C1.67157 14 1 13.3284 1 12.5V2.5C1 1.67157 1.67157 1 2.5 1Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                              </svg>
+                              <span>عرض شبكة</span>
+                            </>
+                          )}
+                        </Button>
+                        <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={handleAddDesign}>
+                          <span>إضافة تصميم</span>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                      <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input 
+                          className="pl-10 pr-4 py-2 w-full text-right" 
+                          placeholder="ابحث عن تصميم..." 
+                          value={designSearchQuery}
+                          onChange={(e) => setDesignSearchQuery(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      {Object.entries(designStatuses).map(([status, details]) => (
+                        <Card 
+                          key={status} 
+                          className={`${details.color} rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md ${selectedDesignCategory === status ? `ring-2 ${details.borderColor}` : ''}`}
+                          onClick={() => handleFilterChange(status)}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-center">
+                              <span className={`text-xl font-bold ${details.textColor}`}>{status}</span>
+                              <span className="px-2 py-1 rounded-full bg-white">
+                                {getDesignCountByStatus(status)}
+                              </span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    
+                    <div className="grid gap-6 grid-cols-1">
+                      {viewMode === "list" ? (
+                        filteredDesigns.length > 0 ? (
+                          filteredDesigns.map(design => (
+                            <DesignCard 
+                              key={design.id} 
+                              design={design} 
+                              viewMode="list" 
+                              onStatusChange={handleDesignStatusChange}
+                            />
+                          ))
+                        ) : (
+                          <div className="col-span-full text-center py-12">
+                            <p className="text-gray-500 text-lg">لا توجد تصاميم متطابقة مع معايير البحث</p>
+                            <Button 
+                              variant="link" 
+                              className="mt-4 text-green-600"
+                              onClick={() => {
+                                setDesignSearchQuery("");
+                                setSelectedDesignCategory("الكل");
+                              }}
+                            >
+                              عرض جميع التصاميم
+                            </Button>
+                          </div>
+                        )
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {filteredDesigns.length > 0 ? (
+                            filteredDesigns.map(design => (
+                              <DesignCard 
+                                key={design.id} 
+                                design={design} 
+                                viewMode="grid" 
+                                onStatusChange={handleDesignStatusChange}
+                              />
+                            ))
+                          ) : (
+                            <div className="col-span-full text-center py-12">
+                              <p className="text-gray-500 text-lg">لا توجد تصاميم متطابقة مع معايير البحث</p>
+                              <Button 
+                                variant="link" 
+                                className="mt-4 text-green-600"
+                                onClick={() => {
+                                  setDesignSearchQuery("");
+                                  setSelectedDesignCategory("الكل");
+                                }}
+                              >
+                                عرض جميع التصاميم
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="posts">
+                  <div className="mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                      <h2 className="text-2xl font-bold mb-4 md:mb-0">
+                        لوحة المنشورات
+                      </h2>
+                      
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <Button className="bg-green-600 hover:bg-green-700 gap-2" onClick={() => navigate("/add-post")}>
+                          <span>إضافة منشور</span>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                      <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input 
+                          className="pl-10 pr-4 py-2 w-full text-right" 
+                          placeholder="ابحث عن منشور..." 
+                          value={postSearchQuery}
+                          onChange={(e) => setPostSearchQuery(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                      {filteredPosts.length > 0 ? (
+                        filteredPosts.map(post => (
+                          <PostCard key={post.id} post={post} />
+                        ))
+                      ) : (
+                        <div className="col-span-full text-center py-12">
+                          <p className="text-gray-500 text-lg">لا توجد منشورات متاحة</p>
+                          <Button 
+                            variant="link" 
+                            className="mt-4 text-green-600"
+                            onClick={() => navigate("/add-post")}
+                          >
+                            إضافة منشور جديد
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            )}
           </div>
         </main>
       </SidebarProvider>

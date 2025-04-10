@@ -40,6 +40,9 @@ const App = () => {
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/clients" element={<Clients />} />
+              <Route path="/clients/:clientId" element={<Clients />} />
+              <Route path="/clients/:clientId/designs" element={<Clients />} />
+              <Route path="/clients/:clientId/posts" element={<Clients />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/chat" element={<Chat />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

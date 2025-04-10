@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Image, User, Share2 } from "lucide-react";
@@ -33,6 +32,7 @@ interface PostProps {
     likes?: number;
     comments?: number;
     shares?: number;
+    clientId?: number;
   };
 }
 
@@ -52,7 +52,7 @@ const PostCard = ({ post: initialPost }: PostProps) => {
         return "bg-gray-200 text-gray-800";
     }
   };
-
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case "معتمد":

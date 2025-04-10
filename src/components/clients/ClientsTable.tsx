@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Edit, Mail, Phone, Trash2, User } from "lucide-react";
+import { Edit, Mail, Phone, Trash2, User, PencilRuler, LayoutGrid } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { clientsData } from "@/data/clients-data";
 import { ClientForm } from "./ClientForm";
+import { Link } from "react-router-dom";
 
 interface ClientsTableProps {
   filteredClients: typeof clientsData;
@@ -64,6 +65,7 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
               <TableHead className="text-right">الحالة</TableHead>
               <TableHead className="text-right">المشاريع</TableHead>
               <TableHead className="text-right">آخر نشاط</TableHead>
+              <TableHead className="text-right">لوحة المحتوى</TableHead>
               <TableHead className="text-right">الإجراءات</TableHead>
             </TableRow>
           </TableHeader>
@@ -73,13 +75,15 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
                 <TableRow key={client.id} onClick={() => toast.info(`تم النقر على العميل: ${client.name}`)}>
                   <TableCell>
                     <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden mr-3">
-                        <User className="h-6 w-6 text-gray-500" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{client.name}</div>
-                        <div className="text-sm text-muted-foreground">منذ {client.joinDate}</div>
-                      </div>
+                      <Link to={`/clients/${client.id}`} className="flex items-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden mr-3">
+                          <User className="h-6 w-6 text-gray-500" />
+                        </div>
+                        <div>
+                          <div className="font-medium">{client.name}</div>
+                          <div className="text-sm text-muted-foreground">منذ {client.joinDate}</div>
+                        </div>
+                      </Link>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -98,6 +102,26 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
                   <TableCell>{getStatusBadge(client.status)}</TableCell>
                   <TableCell>{client.projectsCount}</TableCell>
                   <TableCell>{client.lastActivity}</TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Link 
+                        to={`/clients/${client.id}/designs`} 
+                        className="bg-purple-100 text-purple-700 px-2 py-1 rounded-md flex items-center gap-1 text-sm hover:bg-purple-200"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <PencilRuler className="h-3 w-3" />
+                        <span>التصاميم</span>
+                      </Link>
+                      <Link 
+                        to={`/clients/${client.id}/posts`} 
+                        className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md flex items-center gap-1 text-sm hover:bg-blue-200"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <LayoutGrid className="h-3 w-3" />
+                        <span>المنشورات</span>
+                      </Link>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -148,7 +172,7 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">
+                <TableCell colSpan={8} className="text-center py-10">
                   <p className="text-gray-500 text-lg">لا يوجد عملاء متطابقين مع معايير البحث</p>
                   <Button 
                     variant="link" 
