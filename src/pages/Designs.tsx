@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, List, Filter, Plus, Search } from "lucide-react";
@@ -221,14 +222,15 @@ const Designs = () => {
                         onClick={() => {
                           setSearchQuery("");
                           setSelectedCategory("الكل");
-                      }}
-                    >
-                      عرض جميع التصاميم
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
+                        }}
+                      >
+                        عرض جميع التصاميم
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </main>
       </SidebarProvider>
