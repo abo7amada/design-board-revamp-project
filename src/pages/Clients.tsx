@@ -37,8 +37,7 @@ const Clients = () => {
   };
 
   return (
-    <div className="min-h-screen flex" dir="rtl">
-      {/* Sidebar */}
+    <div className="min-h-screen flex w-full" dir="rtl">
       <SidebarProvider>
         <ClientsSidebar />
         
