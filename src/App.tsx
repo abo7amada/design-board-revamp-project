@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Designs from "./pages/Designs";
 import AddDesign from "./pages/AddDesign";
 import AddPost from "./pages/AddPost";
+import AddClient from "./pages/AddClient";
 import CalendarPage from "./pages/Calendar";
 import Statistics from "./pages/Statistics";
 import Clients from "./pages/Clients";
@@ -37,6 +38,7 @@ const App = () => {
               <Route path="/designs" element={<Designs />} />
               <Route path="/add-design" element={<AddDesign />} />
               <Route path="/add-post" element={<AddPost />} />
+              <Route path="/add-client" element={<AddClient />} />
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/clients" element={<Clients />} />
