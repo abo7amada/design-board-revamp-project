@@ -400,12 +400,12 @@ const CalendarPage = () => {
                   </TabsList>
                 </Tabs>
                 
-                <Select value={platformFilter || ""} onValueChange={(value) => setPlatformFilter(value || null)}>
+                <Select value={platformFilter || "all"} onValueChange={(value) => setPlatformFilter(value === "all" ? null : value)}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="جميع المنصات" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">جميع المنصات</SelectItem>
+                    <SelectItem value="all">جميع المنصات</SelectItem>
                     <SelectItem value="facebook">فيسبوك</SelectItem>
                     <SelectItem value="instagram">انستغرام</SelectItem>
                     <SelectItem value="twitter">تويتر</SelectItem>
