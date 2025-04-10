@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Calendar, LayoutGrid, PencilRuler, Search, Settings, BarChart, Users, Home, List, Filter, Plus } from "lucide-react";
+import { Bell, List, Filter, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import DesignCard from "@/components/DesignCard";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppSidebar } from "@/components/shared/AppSidebar";
 
 // بيانات افتراضية للتصاميم
 const designsData = [
@@ -77,36 +78,6 @@ const Designs = () => {
     toast(`تم التصفية حسب: ${category}`);
   };
 
-  const getStatusBackgroundColor = (status: string) => {
-    switch (status) {
-      case "معتمد":
-        return "bg-green-100";
-      case "قيد المراجعة":
-        return "bg-yellow-100";
-      case "مسودة":
-        return "bg-gray-100";
-      default:
-        return "bg-white";
-    }
-  };
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "معتمد":
-        return "bg-green-500 text-white";
-      case "قيد المراجعة":
-        return "bg-yellow-500 text-white";
-      case "مسودة":
-        return "bg-gray-500 text-white";
-      default:
-        return "bg-gray-200 text-gray-800";
-    }
-  };
-
-  const navigateToCalendar = () => {
-    navigate("/calendar");
-  };
-
   const toggleViewMode = () => {
     setViewMode(viewMode === "grid" ? "list" : "grid");
   };
@@ -119,77 +90,7 @@ const Designs = () => {
     <div className="min-h-screen flex" dir="rtl">
       {/* Sidebar */}
       <SidebarProvider>
-        <aside className="h-screen sticky top-0 w-64 border-l bg-white hidden md:block">
-          <div className="flex flex-col h-full">
-            <div className="p-4 border-b">
-              <h2 className="text-xl font-bold text-green-700">كانفاس التواصل</h2>
-            </div>
-            
-            <nav className="flex-1 overflow-y-auto p-4">
-              <ul className="space-y-6">
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => navigate("/")}>
-                    <Home className="h-5 w-5" />
-                    <span className="text-lg">الرئيسية</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => navigate("/")}>
-                    <LayoutGrid className="h-5 w-5" />
-                    <span className="text-lg">لوحة المنشورات</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-green-700">
-                    <PencilRuler className="h-5 w-5" />
-                    <span className="text-lg">لوحة التصاميم</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button 
-                    variant="link" 
-                    className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" 
-                    onClick={navigateToCalendar}
-                  >
-                    <Calendar className="h-5 w-5" />
-                    <span className="text-lg">التقويم</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => navigate("/statistics")}>
-                    <BarChart className="h-5 w-5" />
-                    <span className="text-lg">الإحصائيات</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => navigate("/clients")}>
-                    <Users className="h-5 w-5" />
-                    <span className="text-lg">العملاء</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => navigate("/settings")}>
-                    <Settings className="h-5 w-5" />
-                    <span className="text-lg">الإعدادات</span>
-                  </Button>
-                </li>
-              </ul>
-            </nav>
-            
-            <div className="p-4 border-t">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-gray-200 relative overflow-hidden">
-                    <img src="/lovable-uploads/10fc914b-5004-4050-8edd-e2273f4b215d.png" alt="Profile" className="h-full w-full object-cover" />
-                  </div>
-                </div>
-                <div className="mr-3">
-                  <p className="text-sm font-medium">أحمد محمد</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
+        <AppSidebar />
         
         {/* Main content */}
         <main className="flex-1 bg-white">
@@ -251,7 +152,9 @@ const Designs = () => {
                       </>
                     ) : (
                       <>
-                        <LayoutGrid className="h-4 w-4" />
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                          <path d="M12.5 2H8V7H13V2.5C13 2.22386 12.7761 2 12.5 2ZM13 8H8V13H12.5C12.7761 13 13 12.7761 13 12.5V8ZM7 2H2.5C2.22386 2 2 2.22386 2 2.5V7H7V2ZM2 8V12.5C2 12.7761 2.22386 13 2.5 13H7V8H2ZM2.5 1H12.5C13.3284 1 14 1.67157 14 2.5V12.5C14 13.3284 13.3284 14 12.5 14H2.5C1.67157 14 1 13.3284 1 12.5V2.5C1 1.67157 1.67157 1 2.5 1Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                        </svg>
                         <span>عرض شبكة</span>
                       </>
                     )}
