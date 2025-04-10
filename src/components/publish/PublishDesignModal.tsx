@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 
-// Import our new component modules
+// Import our component modules
 import { platformSizes } from "./platformSizes";
 import PlatformSelector from "./PlatformSelector";
 import SizeSelector from "./SizeSelector";
@@ -14,6 +14,9 @@ import ContentEditor from "./ContentEditor";
 import AISuggestions from "./AISuggestions";
 import ScheduleSection from "./ScheduleSection";
 import PlatformSizeInfo from "./PlatformSizeInfo";
+
+// Import the custom hook
+import { usePlatformSelection } from "@/hooks/usePlatformSelection";
 
 interface Design {
   id: number;
@@ -33,16 +36,21 @@ interface PublishDesignModalProps {
 }
 
 const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps) => {
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
-  const [platforms, setPlatforms] = useState({
-    facebook: false,
-    instagram: false,
-    twitter: false,
-    linkedin: false,
-    website: false,
-    tiktok: false,
-    pinterest: false,
-  });
+  // Use our custom hook
+  const {
+    selectedPlatform,
+    platforms,
+    selectedSize,
+    autoResizeEnabled,
+    platformSpecificStep,
+    setSelectedPlatform,
+    setPlatforms,
+    setSelectedSize,
+    setAutoResizeEnabled,
+    setPlatformSpecificStep,
+    handleSelectPlatform,
+    getSelectedPlatformsCount
+  } = usePlatformSelection(isOpen);
   
   const [caption, setCaption] = useState("");
   const [publishDate, setPublishDate] = useState<Date | undefined>(new Date());
@@ -51,22 +59,19 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
   const [linkUrl, setLinkUrl] = useState("");
   const [activeTab, setActiveTab] = useState("platforms");
   const [aiSuggestions, setAiSuggestions] = useState<{ text: string, platform: string }[]>([]);
-  const [selectedSize, setSelectedSize] = useState<string>("default");
-  const [autoResizeEnabled, setAutoResizeEnabled] = useState(true);
-  const [platformSpecificStep, setPlatformSpecificStep] = useState(1);
   const [targetAudience, setTargetAudience] = useState("");
   const [trends, setTrends] = useState<string[]>([]);
   
-  // إعادة ضبط الحالة عند فتح النافذة
+  // Reset state when modal reopens
   useEffect(() => {
     if (isOpen) {
       setActiveTab("platforms");
-      setPlatformSpecificStep(1);
-      setSelectedPlatform(null);
+      setCaption("");
+      setLinkUrl("");
     }
   }, [isOpen]);
 
-  // تحميل الترندات الحالية (محاكاة)
+  // Load current trends (simulation)
   useEffect(() => {
     if (isOpen) {
       setTrends([
@@ -86,7 +91,7 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
       return;
     }
     
-    // تجميع بيانات النشر
+    // Gather publishing data
     const publishData = {
       designId: design.id,
       designTitle: design.title,
@@ -102,58 +107,17 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     
     console.log("بيانات النشر:", publishData);
     
-    // إظهار رسالة نجاح النشر
+    // Show success message
     toast.success(isScheduled ? "تم جدولة النشر بنجاح" : "تم النشر بنجاح");
     
-    // إغلاق النافذة
+    // Close modal
     onClose();
   };
-  
-  const getSelectedPlatformsCount = () => {
-    return Object.values(platforms).filter(Boolean).length;
-  };
 
-  const handleSelectPlatform = (platform: string) => {
-    setSelectedPlatform(platform);
-    // Fix the TypeScript error by explicitly specifying the type with all required properties
-    setPlatforms(prev => {
-      const newPlatforms = {
-        facebook: false,
-        instagram: false,
-        twitter: false,
-        linkedin: false,
-        website: false,
-        tiktok: false,
-        pinterest: false,
-      };
-      newPlatforms[platform as keyof typeof newPlatforms] = true;
-      return newPlatforms;
-    });
-    setPlatformSpecificStep(2);
-    
-    // اختيار الحجم الافتراضي للمنصة
-    switch (platform) {
-      case "instagram":
-        setSelectedSize("instagram.feed");
-        break;
-      case "facebook":
-        setSelectedSize("facebook.post");
-        break;
-      case "twitter":
-        setSelectedSize("twitter.post");
-        break;
-      case "linkedin":
-        setSelectedSize("linkedin.post");
-        break;
-      case "tiktok":
-        setSelectedSize("tiktok.video");
-        break;
-      case "pinterest":
-        setSelectedSize("pinterest.pin");
-        break;
-      default:
-        setSelectedSize("default");
-    }
+  const handleSelectAISuggestion = (suggestion: { text: string, platform: string }) => {
+    setCaption(suggestion.text);
+    setActiveTab("content");
+    toast.success("تم اختيار الاقتراح بنجاح");
   };
 
   const renderPlatformSpecificContent = () => {
@@ -283,4 +247,3 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
 };
 
 export default PublishDesignModal;
-
