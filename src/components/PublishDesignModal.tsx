@@ -15,8 +15,9 @@ import AISuggestions from "./publish/AISuggestions";
 import ScheduleSection from "./publish/ScheduleSection";
 import PlatformSizeInfo from "./publish/PlatformSizeInfo";
 
-// Import the custom hook
+// Import custom hooks
 import { usePlatformSelection } from "@/hooks/usePlatformSelection";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
 
 interface Design {
   id: number;
@@ -36,7 +37,7 @@ interface PublishDesignModalProps {
 }
 
 const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps) => {
-  // Use our custom hook
+  // Use our custom hooks
   const {
     selectedPlatform,
     platforms,
@@ -51,6 +52,11 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     handleSelectPlatform,
     getSelectedPlatformsCount
   } = usePlatformSelection(isOpen);
+
+  const {
+    trends,
+    handleSelectAISuggestion
+  } = useAISuggestions(isOpen, design.title, design.author);
   
   const [caption, setCaption] = useState("");
   const [publishDate, setPublishDate] = useState<Date | undefined>(new Date());
@@ -58,9 +64,6 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
   const [isScheduled, setIsScheduled] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [activeTab, setActiveTab] = useState("platforms");
-  const [aiSuggestions, setAiSuggestions] = useState<{ text: string, platform: string }[]>([]);
-  const [targetAudience, setTargetAudience] = useState("");
-  const [trends, setTrends] = useState<string[]>([]);
   
   // Reset state when modal reopens
   useEffect(() => {
@@ -68,20 +71,6 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
       setActiveTab("platforms");
       setCaption("");
       setLinkUrl("");
-    }
-  }, [isOpen]);
-
-  // Load current trends (simulation)
-  useEffect(() => {
-    if (isOpen) {
-      setTrends([
-        "#تصميم_الجرافيك",
-        "#التسويق_الرقمي",
-        "#تصميم_المواقع",
-        "#محتوى_إبداعي",
-        "#تصميم_هوية_بصرية",
-        "#ريادة_أعمال"
-      ]);
     }
   }, [isOpen]);
   
@@ -114,7 +103,8 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     onClose();
   };
 
-  const handleSelectAISuggestion = (suggestion: { text: string, platform: string }) => {
+  // Handle AI suggestion selection
+  const handleSuggestionSelect = (suggestion: { text: string, platform: string }) => {
     setCaption(suggestion.text);
     setActiveTab("content");
     toast.success("تم اختيار الاقتراح بنجاح");
@@ -165,6 +155,9 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     
     return null;
   };
+
+  // State for target audience
+  const [targetAudience, setTargetAudience] = useState("");
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -220,7 +213,7 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
             <AISuggestions 
               selectedPlatform={selectedPlatform}
               targetAudience={targetAudience}
-              onSelectSuggestion={handleSelectAISuggestion}
+              onSelectSuggestion={handleSuggestionSelect}
               onBack={() => setActiveTab("content")}
               trends={trends}
               designTitle={design.title}

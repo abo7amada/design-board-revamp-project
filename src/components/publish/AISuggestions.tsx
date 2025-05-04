@@ -1,8 +1,7 @@
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { User, CheckCircle, Instagram, Facebook, Twitter, Linkedin } from "lucide-react";
-import { toast } from "sonner";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
 
 interface AISuggestion {
   text: string;
@@ -28,57 +27,12 @@ const AISuggestions = ({
   designTitle,
   designAuthor
 }: AISuggestionsProps) => {
-  const [isAiGenerating, setIsAiGenerating] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
-  
-  const handleGenerateAISuggestions = () => {
-    setIsAiGenerating(true);
-    
-    // محاكاة استجابة من خدمة الذكاء الاصطناعي
-    setTimeout(() => {
-      const suggestions = [
-        {
-          text: `استعدوا لتجربة لا مثيل لها مع ${designTitle}! تصميم فريد يعكس رؤيتنا المبتكرة ويلبي احتياجاتكم بأسلوب عصري. اكتشفوا الفرق الآن! #تصميم_ابداعي #حلول_مبتكرة ${trends[0]} ${trends[1]}`,
-          platform: "all"
-        },
-        {
-          text: `نفخر بتقديم ${designTitle} - نتاج شغف وإبداع فريقنا المتميز. صُمم خصيصاً لكم بعناية فائقة للتفاصيل. شاركونا آراءكم وانطباعاتكم! #تصميم_احترافي #خبرة_عالية`,
-          platform: "all"
-        },
-        {
-          text: `أطلقنا اليوم ${designTitle} بمزايا جديدة ومبتكرة. تصميم عصري يجمع بين الأناقة والعملية. تابعونا للمزيد من التفاصيل المثيرة! #إطلاق_جديد #تصميم_مبتكر`,
-          platform: "all"
-        },
-        {
-          text: `✨ شاهدوا أحدث تصاميمنا: ${designTitle}. من #تصميم: ${designAuthor}. أخبرونا برأيكم في التعليقات 👇 ${trends[2]} ${trends[3]}`,
-          platform: "instagram"
-        },
-        {
-          text: `مع ${designTitle} نقدم لكم تجربة مميزة تجمع بين الابتكار والإبداع. اضغط على الرابط في البايو للمزيد من المعلومات! 🎨✨ ${trends[0]}`,
-          platform: "instagram"
-        },
-        {
-          text: `أطلقنا للتو ${designTitle}! تصميم يجمع بين الوظائف العملية والمظهر الجذاب ليناسب احتياجاتكم. شاركوا المنشور مع من يهتم! ${trends[2]}`,
-          platform: "facebook"
-        },
-        {
-          text: `تصميم جديد يضاف لسلسلة أعمالنا المميزة: ${designTitle}. صمم خصيصاً ليلبي احتياجات عملائنا ويتجاوز توقعاتهم. ماذا تعتقدون؟ ${trends[4]}`,
-          platform: "facebook"
-        },
-        {
-          text: `تصميم ${designTitle} متاح الآن! 🚀 إبداع وابتكار في تصميم واحد. للاستفسار والطلب: اضغط على الرابط أدناه. ${trends[0]} ${trends[5]}`,
-          platform: "twitter"
-        },
-        {
-          text: `نقدم لكم: ${designTitle} - أحدث إضافة لمجموعة تصاميمنا الاحترافية. نسعد بمشاركتكم ملاحظاتكم وآرائكم! ${trends[1]}`,
-          platform: "linkedin"
-        }
-      ];
-      
-      setAiSuggestions(suggestions);
-      setIsAiGenerating(false);
-    }, 2000);
-  };
+  // Use our custom AI suggestions hook
+  const {
+    isAiGenerating,
+    aiSuggestions,
+    handleGenerateAISuggestions
+  } = useAISuggestions(true, designTitle, designAuthor);
 
   return (
     <div>
