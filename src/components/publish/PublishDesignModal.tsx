@@ -1,22 +1,25 @@
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 
 // Import our component modules
 import { platformSizes } from "./platformSizes";
 import PlatformSelector from "./PlatformSelector";
 import SizeSelector from "./SizeSelector";
-import ContentEditor from "./ContentEditor";
-import AISuggestions from "./AISuggestions";
-import ScheduleSection from "./ScheduleSection";
 import PlatformSizeInfo from "./PlatformSizeInfo";
+import PublishModalHeader from "./PublishModalHeader";
+import PublishModalFooter from "./PublishModalFooter";
+import PublishTabsNav from "./PublishTabsNav";
+import PlatformsTabContent from "./PlatformsTabContent";
+import ContentTabContent from "./ContentTabContent";
+import ScheduleTabContent from "./ScheduleTabContent";
+import AITabContent from "./AITabContent";
 
-// Import the custom hook
+// Import the custom hooks
 import { usePlatformSelection } from "@/hooks/usePlatformSelection";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
 
 interface Design {
   id: number;
@@ -36,7 +39,7 @@ interface PublishDesignModalProps {
 }
 
 const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps) => {
-  // Use our custom hook
+  // Use our custom hooks
   const {
     selectedPlatform,
     platforms,
@@ -51,6 +54,11 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     handleSelectPlatform,
     getSelectedPlatformsCount
   } = usePlatformSelection(isOpen);
+
+  const {
+    trends,
+    handleSelectAISuggestion
+  } = useAISuggestions(isOpen, design.title, design.author);
   
   const [caption, setCaption] = useState("");
   const [publishDate, setPublishDate] = useState<Date | undefined>(new Date());
@@ -58,9 +66,6 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
   const [isScheduled, setIsScheduled] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [activeTab, setActiveTab] = useState("platforms");
-  const [aiSuggestions, setAiSuggestions] = useState<{ text: string, platform: string }[]>([]);
-  const [targetAudience, setTargetAudience] = useState("");
-  const [trends, setTrends] = useState<string[]>([]);
   
   // Reset state when modal reopens
   useEffect(() => {
@@ -68,20 +73,6 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
       setActiveTab("platforms");
       setCaption("");
       setLinkUrl("");
-    }
-  }, [isOpen]);
-
-  // Load current trends (simulation)
-  useEffect(() => {
-    if (isOpen) {
-      setTrends([
-        "#تصميم_الجرافيك",
-        "#التسويق_الرقمي",
-        "#تصميم_المواقع",
-        "#محتوى_إبداعي",
-        "#تصميم_هوية_بصرية",
-        "#ريادة_أعمال"
-      ]);
     }
   }, [isOpen]);
   
@@ -114,7 +105,8 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     onClose();
   };
 
-  const handleSelectAISuggestion = (suggestion: { text: string, platform: string }) => {
+  // Handle AI suggestion selection
+  const handleSuggestionSelect = (suggestion: { text: string, platform: string }) => {
     setCaption(suggestion.text);
     setActiveTab("content");
     toast.success("تم اختيار الاقتراح بنجاح");
@@ -165,82 +157,65 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     
     return null;
   };
+
+  // State for target audience
+  const [targetAudience, setTargetAudience] = useState("");
+
+  const isPublishButtonDisabled = platformSpecificStep === 1 
+    ? !selectedPlatform 
+    : (selectedPlatform ? false : getSelectedPlatformsCount() === 0);
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="md:max-w-xl" dir="rtl">
-        <DialogHeader>
-          <DialogTitle className="text-xl">نشر التصميم</DialogTitle>
-          <DialogDescription>
-            اختر المنصات وأضف التفاصيل لنشر التصميم "{design.title}"
-          </DialogDescription>
-        </DialogHeader>
+        <PublishModalHeader designTitle={design.title} />
         
-        <Tabs defaultValue="platforms" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full">
-            <TabsTrigger value="platforms">المنصات</TabsTrigger>
-            <TabsTrigger value="content">المحتوى</TabsTrigger>
-            <TabsTrigger value="schedule">الجدولة</TabsTrigger>
-            <TabsTrigger value="ai">مساعد الذكاء</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="platforms" className="space-y-4 pt-4">
+        <PublishTabsNav activeTab={activeTab} onTabChange={setActiveTab}>
+          <PlatformsTabContent>
             {renderPlatformSpecificContent()}
-          </TabsContent>
+          </PlatformsTabContent>
           
-          <TabsContent value="content" className="space-y-4 pt-4">
-            <ContentEditor 
-              caption={caption}
-              setCaption={setCaption}
-              linkUrl={linkUrl}
-              setLinkUrl={setLinkUrl}
-              selectedPlatform={selectedPlatform}
-              designTitle={design.title}
-              designImage={design.image}
-              getSelectedPlatformsCount={getSelectedPlatformsCount}
-              onBack={() => setActiveTab("platforms")}
-              onContinue={() => setActiveTab("ai")}
-            />
-          </TabsContent>
+          <ContentTabContent
+            caption={caption}
+            setCaption={setCaption}
+            linkUrl={linkUrl}
+            setLinkUrl={setLinkUrl}
+            selectedPlatform={selectedPlatform}
+            designTitle={design.title}
+            designImage={design.image}
+            getSelectedPlatformsCount={getSelectedPlatformsCount}
+            onBack={() => setActiveTab("platforms")}
+            onContinue={() => setActiveTab("ai")}
+          />
           
-          <TabsContent value="schedule" className="space-y-4 pt-4">
-            <ScheduleSection 
-              isScheduled={isScheduled}
-              setIsScheduled={setIsScheduled}
-              publishDate={publishDate}
-              setPublishDate={setPublishDate}
-              publishTime={publishTime}
-              setPublishTime={setPublishTime}
-              onBack={() => setActiveTab("content")}
-              onPublish={handlePublish}
-            />
-          </TabsContent>
+          <ScheduleTabContent
+            isScheduled={isScheduled}
+            setIsScheduled={setIsScheduled}
+            publishDate={publishDate}
+            setPublishDate={setPublishDate}
+            publishTime={publishTime}
+            setPublishTime={setPublishTime}
+            onBack={() => setActiveTab("content")}
+            onPublish={handlePublish}
+          />
           
-          <TabsContent value="ai" className="space-y-4 pt-4">
-            <AISuggestions 
-              selectedPlatform={selectedPlatform}
-              targetAudience={targetAudience}
-              onSelectSuggestion={handleSelectAISuggestion}
-              onBack={() => setActiveTab("content")}
-              trends={trends}
-              designTitle={design.title}
-              designAuthor={design.author}
-            />
-          </TabsContent>
-        </Tabs>
+          <AITabContent
+            selectedPlatform={selectedPlatform}
+            targetAudience={targetAudience}
+            onSelectSuggestion={handleSuggestionSelect}
+            onBack={() => setActiveTab("content")}
+            trends={trends}
+            designTitle={design.title}
+            designAuthor={design.author}
+          />
+        </PublishTabsNav>
         
-        <DialogFooter className="flex justify-between">
-          <Button variant="outline" onClick={onClose}>
-            إلغاء
-          </Button>
-          <Button 
-            className="bg-green-600 hover:bg-green-700" 
-            onClick={handlePublish}
-            disabled={platformSpecificStep === 1 ? !selectedPlatform : (selectedPlatform ? false : getSelectedPlatformsCount() === 0)}
-          >
-            {isScheduled ? "جدولة النشر" : "نشر الآن"}
-          </Button>
-        </DialogFooter>
+        <PublishModalFooter
+          onClose={onClose}
+          onPublish={handlePublish}
+          isScheduled={isScheduled}
+          isDisabled={isPublishButtonDisabled}
+        />
       </DialogContent>
     </Dialog>
   );
