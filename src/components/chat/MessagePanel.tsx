@@ -29,7 +29,7 @@ interface Message {
 interface MessagePanelProps {
   isOpen: boolean;
   onClose: () => void;
-  designId?: number;
+  designId?: string;
   designTitle?: string;
 }
 

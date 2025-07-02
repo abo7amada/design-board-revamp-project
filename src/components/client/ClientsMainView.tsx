@@ -22,7 +22,8 @@ interface ClientsMainViewProps {
   setActiveTab: React.Dispatch<React.SetStateAction<string>>;
   viewMode: "grid" | "list";
   toggleViewMode: () => void;
-  onDesignStatusChange: (id: number, newStatus: string) => void;
+  onDesignStatusChange: (id: string, newStatus: string) => void;
+  loading?: boolean;
 }
 
 export const ClientsMainView = ({ 
@@ -39,17 +40,27 @@ export const ClientsMainView = ({
   setActiveTab,
   viewMode,
   toggleViewMode,
-  onDesignStatusChange
+  onDesignStatusChange,
+  loading = false
 }: ClientsMainViewProps) => {
   const navigate = useNavigate();
 
   // Filter clients based on search, status, and sector
   const filteredClients = clientsData.filter(client => {
-    const searchMatch = client.name.includes(searchQuery) || client.contactPerson.includes(searchQuery);
+    const searchMatch = client.name.includes(searchQuery) || (client.email && client.email.includes(searchQuery));
     const statusMatch = selectedStatus === "الكل" || client.status === selectedStatus;
-    const sectorMatch = selectedSector === "الكل" || client.sector === selectedSector;
+    const sectorMatch = selectedSector === "الكل" || client.industry === selectedSector;
     return searchMatch && statusMatch && sectorMatch;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+        <span className="mr-3">جاري تحميل العملاء...</span>
+      </div>
+    );
+  }
 
   const handleAddClient = () => {
     navigate("/add-client");

@@ -20,7 +20,7 @@ interface ClientDesignsTabProps {
   designs: any[];
   viewMode: "grid" | "list";
   toggleViewMode: () => void;
-  onStatusChange: (id: number, newStatus: string) => void;
+  onStatusChange: (id: string, newStatus: string) => void;
 }
 
 export const ClientDesignsTab = ({ 

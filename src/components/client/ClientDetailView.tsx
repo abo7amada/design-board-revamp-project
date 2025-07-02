@@ -18,7 +18,7 @@ interface ClientDetailViewProps {
   viewMode: "grid" | "list";
   toggleViewMode: () => void;
   onTabChange: (tab: string) => void;
-  onDesignStatusChange: (id: number, newStatus: string) => void;
+  onDesignStatusChange: (id: string, newStatus: string) => void;
 }
 
 export const ClientDetailView = ({

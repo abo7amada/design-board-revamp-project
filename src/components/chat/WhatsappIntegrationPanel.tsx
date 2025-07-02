@@ -122,7 +122,7 @@ const WhatsappIntegrationPanel = ({ isOpen, onClose }: WhatsappIntegrationPanelP
     setReplyText("");
   };
 
-  const handleOpenDesignChat = (designId: number, designTitle: string) => {
+  const handleOpenDesignChat = (designId: string, designTitle: string) => {
     // Trigger a custom event to open the design chat with the correct design
     const event = new CustomEvent('openDesignChat', { 
       detail: { designId, designTitle } 
@@ -276,7 +276,7 @@ const WhatsappIntegrationPanel = ({ isOpen, onClose }: WhatsappIntegrationPanelP
                       <Button 
                         variant="outline" 
                         className="w-full text-right justify-between" 
-                        onClick={() => handleOpenDesignChat(selectedMessageData.designId, selectedMessageData.designTitle)}
+                        onClick={() => handleOpenDesignChat(selectedMessageData.designId.toString(), selectedMessageData.designTitle)}
                       >
                         <span>{selectedMessageData.designTitle}</span>
                         <ChevronRight className="h-4 w-4" />

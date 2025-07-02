@@ -1,6 +1,6 @@
 
 export interface Design {
-  id: number;
+  id: string;
   title: string;
   category: string;
   image: string;
@@ -9,10 +9,11 @@ export interface Design {
   likes: number;
   comments: number;
   description?: string;
+  client_id?: string | null;
 }
 
 export interface DesignCardProps {
   design: Design;
   viewMode: "grid" | "list";
-  onStatusChange?: (id: number, newStatus: string) => void;
+  onStatusChange?: (id: string, newStatus: string) => void;
 }

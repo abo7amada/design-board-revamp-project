@@ -2,7 +2,7 @@
 // بيانات افتراضية للتصاميم
 export const designsData = [
   {
-    id: 1,
+    id: "1",
     title: "إطلاق منتج جديد",
     category: "معتمد",
     image: "/lovable-uploads/10fc914b-5004-4050-8edd-e2273f4b215d.png",
@@ -14,7 +14,7 @@ export const designsData = [
     clientId: 1
   },
   {
-    id: 2,
+    id: "2",
     title: "ورشة عمل تقنية",
     category: "قيد المراجعة",
     image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dGVjaCUyMHdvcmtzaG9wfGVufDB8fDB8fHww",
@@ -26,7 +26,7 @@ export const designsData = [
     clientId: 1
   },
   {
-    id: 3,
+    id: "3",
     title: "إعلان توظيف",
     category: "مسودة",
     image: "https://images.unsplash.com/photo-1575089976121-8ed7b2a54265?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D",
@@ -38,7 +38,7 @@ export const designsData = [
     clientId: 2
   },
   {
-    id: 4,
+    id: "4",
     title: "عرض خاص لرمضان",
     category: "معتمد",
     image: "https://images.unsplash.com/photo-1556155092-490a1ba16284?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8UmFtYWRhbnxlbnwwfHwwfHx8MA%3D%3D",
@@ -50,7 +50,7 @@ export const designsData = [
     clientId: 1
   },
   {
-    id: 5,
+    id: "5",
     title: "حملة ترويجية للربع الأول",
     category: "قيد المراجعة",
     image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fG1hcmtldGluZyUyMGNhbXBhaWdufGVufDB8fDB8fHww",

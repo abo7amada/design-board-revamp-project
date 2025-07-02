@@ -15,7 +15,7 @@ import ActiveMembersPanel from "@/components/chat/ActiveMembersPanel";
 const Chat = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [activeDesign, setActiveDesign] = useState<{id: number, title: string} | null>(null);
+  const [activeDesign, setActiveDesign] = useState<{id: string, title: string} | null>(null);
   const [isWhatsappPanelOpen, setIsWhatsappPanelOpen] = useState(false);
   const [showChannels, setShowChannels] = useState(true);
   const [isActiveMembersPanelOpen, setIsActiveMembersPanelOpen] = useState(false);
@@ -49,7 +49,7 @@ const Chat = () => {
     }
   }, [location.state]);
   
-  const handleOpenPanel = (designId: number, designTitle: string) => {
+  const handleOpenPanel = (designId: string, designTitle: string) => {
     setActiveDesign({id: designId, title: designTitle});
     setIsPanelOpen(true);
   };
@@ -112,7 +112,7 @@ const Chat = () => {
                     <Users className="h-4 w-4 ml-2" />
                     المستخدمون النشطون
                   </Button>
-                  <Button variant="outline" onClick={() => handleOpenPanel(1, "إطلاق منتج جديد")}>
+                  <Button variant="outline" onClick={() => handleOpenPanel("1", "إطلاق منتج جديد")}>
                     <MessageSquare className="h-4 w-4 ml-2" />
                     مناقشة تصميم
                   </Button>
@@ -183,10 +183,10 @@ const Chat = () => {
                   <h2 className="text-xl font-semibold mb-4">آخر التصاميم للمناقشة</h2>
                   <div className="grid gap-4 md:grid-cols-2">
                     {[
-                      { id: 1, title: "إطلاق منتج جديد", category: "إعلان" },
-                      { id: 2, title: "حملة تسويقية رمضانية", category: "سوشيال ميديا" },
-                      { id: 3, title: "واجهة تطبيق المتجر", category: "واجهة مستخدم" },
-                      { id: 4, title: "شعار شركة ناشئة", category: "هوية بصرية" }
+                      { id: "1", title: "إطلاق منتج جديد", category: "إعلان" },
+                      { id: "2", title: "حملة تسويقية رمضانية", category: "سوشيال ميديا" },
+                      { id: "3", title: "واجهة تطبيق المتجر", category: "واجهة مستخدم" },
+                      { id: "4", title: "شعار شركة ناشئة", category: "هوية بصرية" }
                     ].map((design) => (
                       <div key={design.id} className="border rounded-md p-4">
                         <div className="flex justify-between items-start mb-2">

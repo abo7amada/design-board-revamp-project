@@ -16,7 +16,7 @@ interface DesignHeaderProps {
   category: string;
   author: string;
   date: string;
-  designId: number;
+  designId: string;
   designTitle: string;
   onMore: (e: React.MouseEvent) => void;
   onStatusChange: (newStatus: string) => void;

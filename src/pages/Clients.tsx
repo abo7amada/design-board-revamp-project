@@ -1,14 +1,15 @@
 
 import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { clientsData } from "@/data/clients-data";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { ClientsHeader } from "@/components/clients/ClientsHeader";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { ClientsMainView } from "@/components/client/ClientsMainView";
 import { ClientDetailView } from "@/components/client/ClientDetailView";
-import { designsData, postsData } from "@/components/data/mockData";
+import { useClients } from "@/hooks/useClients";
+import { useDesignsData } from "@/hooks/useDesignsData";
+import { usePosts } from "@/hooks/usePosts";
 
 const Clients = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,6 +20,11 @@ const Clients = () => {
   const navigate = useNavigate();
   const { clientId } = useParams<{ clientId: string }>();
   const location = useLocation();
+  
+  // استخدام الخطافات الجديدة للبيانات
+  const { clients, loading: clientsLoading } = useClients();
+  const { designs, loading: designsLoading, handleStatusChange } = useDesignsData();
+  const { posts, loading: postsLoading } = usePosts();
 
   // تحديد التبويب النشط بناءً على المسار
   useEffect(() => {
@@ -36,21 +42,19 @@ const Clients = () => {
   }, [location.pathname, clientId]);
 
   // الحصول على التصاميم الخاصة بالعميل الحالي
-  const getClientDesigns = (clientId?: number) => {
-    if (!clientId) return designsData;
-    return designsData.filter(design => design.clientId === clientId);
+  const getClientDesigns = (clientId?: string) => {
+    if (!clientId) return designs;
+    return designs.filter(design => design.client_id === clientId);
   };
 
   // الحصول على المنشورات الخاصة بالعميل الحالي
-  const getClientPosts = (clientId?: number) => {
-    if (!clientId) return postsData;
-    return postsData.filter(post => post.clientId === clientId);
+  const getClientPosts = (clientId?: string) => {
+    if (!clientId) return posts;
+    return posts.filter(post => post.client_id === clientId);
   };
 
-  const handleDesignStatusChange = (id: number, newStatus: string) => {
-    // في تطبيق حقيقي، سنقوم بتحديث حالة التصميم في قاعدة البيانات
-    console.log("تحديث حالة التصميم:", id, newStatus);
-    toast.success(`تم تحديث حالة التصميم ${id} إلى ${newStatus}`);
+  const handleDesignStatusChange = async (id: string, newStatus: string) => {
+    await handleStatusChange(id, newStatus);
   };
 
   const toggleViewMode = () => {
@@ -58,7 +62,7 @@ const Clients = () => {
   };
 
   // الحصول على اسم العميل الحالي
-  const currentClient = clientId ? clientsData.find(c => c.id === parseInt(clientId)) : null;
+  const currentClient = clientId ? clients.find(c => c.id === clientId) : null;
   
   // Handle tab changes for client detail view
   const handleClientDetailTabChange = (tab: string) => {
@@ -102,9 +106,9 @@ const Clients = () => {
               />
             ) : (
               <ClientsMainView 
-                clientsData={clientsData}
-                designsData={designsData}
-                postsData={postsData}
+                clientsData={clients}
+                designsData={designs}
+                postsData={posts}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 selectedStatus={selectedStatus}
@@ -116,6 +120,7 @@ const Clients = () => {
                 viewMode={viewMode}
                 toggleViewMode={toggleViewMode}
                 onDesignStatusChange={handleDesignStatusChange}
+                loading={clientsLoading || designsLoading || postsLoading}
               />
             )}
           </div>

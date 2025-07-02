@@ -20,7 +20,7 @@ import { usePlatformSelection } from "@/hooks/usePlatformSelection";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 
 interface Design {
-  id: number;
+  id: string;
   title: string;
   category: string;
   image: string;
