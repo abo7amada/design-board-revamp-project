@@ -301,6 +301,111 @@ export type Database = {
         }
         Relationships: []
       }
+      publishing_history: {
+        Row: {
+          created_at: string
+          engagement_data: Json | null
+          error_message: string | null
+          id: string
+          platform: string
+          platform_post_id: string | null
+          post_id: string
+          published_at: string | null
+          social_account_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          engagement_data?: Json | null
+          error_message?: string | null
+          id?: string
+          platform: string
+          platform_post_id?: string | null
+          post_id: string
+          published_at?: string | null
+          social_account_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          engagement_data?: Json | null
+          error_message?: string | null
+          id?: string
+          platform?: string
+          platform_post_id?: string | null
+          post_id?: string
+          published_at?: string | null
+          social_account_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publishing_history_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "publishing_history_social_account_id_fkey"
+            columns: ["social_account_id"]
+            isOneToOne: false
+            referencedRelation: "social_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_accounts: {
+        Row: {
+          access_token: string
+          account_name: string | null
+          account_type: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          platform: string
+          platform_user_id: string
+          platform_username: string | null
+          refresh_token: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          account_name?: string | null
+          account_type?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          platform_user_id: string
+          platform_username?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          account_name?: string | null
+          account_type?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          platform_user_id?: string
+          platform_username?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
