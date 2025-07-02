@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -27,8 +26,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PublishDesignModal from "@/components/PublishDesignModal";
 import { usePosts } from "@/hooks/usePosts";
 import { AppSidebar } from "@/components/shared/AppSidebar";
-
-// Remove mock data - will use real data from hooks
 
 // Helper function to get platform icon
 const getPlatformIcon = (platform: string) => {
@@ -213,186 +210,116 @@ const CalendarPage = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="border rounded-lg p-4">
                         <div className="flex justify-between items-center">
-                          <div className="font-bold text-3xl text-blue-600">478</div>
+                          <div className="font-bold text-3xl text-blue-600">
+                            {posts.filter(p => p.scheduled_at).length}
+                          </div>
                           <Facebook className="h-6 w-6 text-blue-600" />
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">إجمالي التفاعلات</p>
+                        <div className="text-sm text-gray-600 mt-1">منشورات مجدولة</div>
                       </div>
                       
                       <div className="border rounded-lg p-4">
                         <div className="flex justify-between items-center">
-                          <div className="font-bold text-3xl text-pink-600">512</div>
+                          <div className="font-bold text-3xl text-pink-600">
+                            {posts.filter(p => p.status === 'published').length}
+                          </div>
                           <Instagram className="h-6 w-6 text-pink-600" />
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">إجمالي التفاعلات</p>
-                      </div>
-                      
-                      <div className="border rounded-lg p-4">
-                        <div className="flex justify-between items-center">
-                          <div className="font-bold text-3xl text-blue-400">192</div>
-                          <Twitter className="h-6 w-6 text-blue-400" />
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">إجمالي التفاعلات</p>
-                      </div>
-                      
-                      <div className="border rounded-lg p-4">
-                        <div className="flex justify-between items-center">
-                          <div className="font-bold text-3xl text-blue-800">87</div>
-                          <Linkedin className="h-6 w-6 text-blue-800" />
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">إجمالي التفاعلات</p>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium">أداء المنشورات هذا الشهر</span>
-                        <Button variant="ghost" size="sm" onClick={() => toast.info("عرض المزيد من الإحصائيات")}>
-                          المزيد <ChevronDown className="h-3 w-3 mr-1" />
-                        </Button>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-500">إجمالي التفاعلات</span>
-                          <div className="text-xs font-medium">1,269</div>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-green-600 rounded-full" style={{ width: '75%' }}></div>
-                        </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-500">إجمالي الوصول</span>
-                          <div className="text-xs font-medium">8,943</div>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-600 rounded-full" style={{ width: '60%' }}></div>
-                        </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-500">إجمالي النقرات</span>
-                          <div className="text-xs font-medium">312</div>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-yellow-500 rounded-full" style={{ width: '40%' }}></div>
-                        </div>
+                        <div className="text-sm text-gray-600 mt-1">منشورات منشورة</div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
               
-              {/* المنشورات ليوم معين */}
+              {/* Posts for selected date */}
               <div className="lg:w-1/2">
-                <Card className="shadow-md h-full">
+                <Card className="shadow-md">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl">
-                      {selectedDate ? `منشورات يوم ${selectedDate.toLocaleDateString('ar-EG')}` : "اختر تاريخًا"}
+                      منشورات يوم {selectedDate && selectedDate.toLocaleDateString('ar-SA')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="mb-4">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input 
-                          className="pl-10 pr-4 py-2 w-full text-right" 
-                          placeholder="ابحث عن منشور..." 
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                    {loading ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">جاري تحميل المنشورات...</p>
+                      </div>
+                    ) : finalFilteredPosts.length > 0 ? (
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {finalFilteredPosts.map(post => (
+                          <PostCard key={post.id} post={post} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 mb-4">
+                          {selectedDate 
+                            ? "لا توجد منشورات مجدولة في هذا التاريخ" 
+                            : "اختر تاريخًا لعرض المنشورات المجدولة"
+                          }
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={handleAddScheduledPost}
+                          className="gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          جدولة منشور جديد
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                {/* Schedule analysis */}
+                <Card className="shadow-md mt-6">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl">تحليل الجدولة</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center">
+                          <div className="font-bold text-2xl text-green-600">
+                            {posts.filter(p => p.scheduled_at).length}
+                          </div>
+                          <CalendarIcon className="h-6 w-6 text-green-600" />
+                        </div>
+                        <div className="text-sm text-gray-600 mt-1">منشورات مجدولة</div>
+                      </div>
+                      
+                      <div className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center">
+                          <div className="font-bold text-2xl text-blue-600">
+                            {posts.filter(p => p.status === 'published').length}
+                          </div>
+                          <BarChart className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div className="text-sm text-gray-600 mt-1">منشورات منشورة</div>
                       </div>
                     </div>
                     
-                    <div className="space-y-4 max-h-[700px] overflow-auto">
-                      {finalFilteredPosts.length > 0 ? (
-                        Object.entries(groupedPosts).map(([category, posts]) => (
-                          <div key={category} className="space-y-2">
-                            <h3 className="text-lg font-semibold text-right mb-2">{category}</h3>
-                            {posts.map(post => (
-                              <div key={post.id} className="border rounded-lg p-3 hover:bg-gray-50">
-                                <div className="flex">
-                                  <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
-                                    <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
-                                  </div>
-                                  <div className="mr-3 flex-1">
-                                    <div className="flex justify-between">
-                                      <h3 className="font-medium">{post.title}</h3>
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" size="sm">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-48">
-                                          <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={() => toast.info("تعديل المنشور")}>
-                                              تعديل المنشور
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => toast.info("تغيير موعد النشر")}>
-                                              تغيير موعد النشر
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => toast.info("حذف المنشور")}>
-                                              حذف المنشور
-                                            </DropdownMenuItem>
-                                          </DropdownMenuGroup>
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
-                                    </div>
-                                    
-                                    <div className="text-sm text-gray-500 mt-1">{post.author}</div>
-                                    
-                                    <div className="flex mt-2 justify-between">
-                                      <div className="flex items-center gap-1">
-                                        {post.platforms.map((platform) => (
-                                          <div key={platform} className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
-                                            {getPlatformIcon(platform)}
-                                          </div>
-                                        ))}
-                                      </div>
-                                      
-                                      {post.category === "منشور" && (
-                                        <div className="text-xs flex gap-2">
-                                          <div className="flex items-center gap-1 text-gray-500">
-                                            <span>{post.stats.likes}</span>
-                                            <Heart className="h-3 w-3" />
-                                          </div>
-                                          <div className="flex items-center gap-1 text-gray-500">
-                                            <span>{post.stats.comments}</span>
-                                            <MessageCircle className="h-3 w-3" />
-                                          </div>
-                                        </div>
-                                      )}
-                                      
-                                      {post.category === "مجدول" && (
-                                        <div className="text-xs text-gray-500">
-                                          {new Date(parsePostDate(post.date)).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-10">
-                          <p className="text-gray-500">
-                            {selectedDate 
-                              ? "لا توجد منشورات في هذا التاريخ" 
-                              : "الرجاء اختيار تاريخ لعرض المنشورات"}
-                          </p>
-                          
-                          <Button 
-                            variant="outline" 
-                            className="mt-4"
-                            onClick={handleAddScheduledPost}
-                          >
-                            <Plus className="h-4 w-4 ml-2" />
-                            إضافة منشور
-                          </Button>
+                    <div className="mt-6 border rounded-lg p-4">
+                      <h4 className="font-medium mb-3">أفضل أوقات النشر</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>فيسبوك</span>
+                          <span className="text-green-600">9:00 ص - 3:00 م</span>
                         </div>
-                      )}
+                        <div className="flex justify-between">
+                          <span>إنستجرام</span>
+                          <span className="text-green-600">6:00 م - 9:00 م</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>تويتر</span>
+                          <span className="text-green-600">12:00 م - 3:00 م</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>لينكد إن</span>
+                          <span className="text-green-600">8:00 ص - 10:00 ص</span>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -400,15 +327,15 @@ const CalendarPage = () => {
             </div>
           </div>
         </main>
+        
+        {selectedDesign && (
+          <PublishDesignModal 
+            design={selectedDesign}
+            isOpen={isPublishModalOpen} 
+            onClose={() => setIsPublishModalOpen(false)} 
+          />
+        )}
       </SidebarProvider>
-      
-      {selectedDesign && (
-        <PublishDesignModal
-          isOpen={isPublishModalOpen}
-          onClose={() => setIsPublishModalOpen(false)}
-          design={selectedDesign}
-        />
-      )}
     </div>
   );
 };
