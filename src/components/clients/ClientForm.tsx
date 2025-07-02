@@ -13,14 +13,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Edit, Plus } from "lucide-react";
+import { useClients } from "@/hooks/useClients";
 
 interface ClientData {
-  id?: number;
+  id?: string;
   name: string;
   email: string;
   phone: string;
-  sector: string;
-  contact: string;
+  company: string;
+  industry: string;
 }
 
 interface ClientFormProps {
@@ -32,12 +33,13 @@ interface ClientFormProps {
 
 export const ClientForm = ({ isEdit = false, clientData: initialClientData, onSuccess, trigger }: ClientFormProps) => {
   const [open, setOpen] = useState(false);
+  const { addClient, updateClient, loading } = useClients();
   const [clientData, setClientData] = useState<ClientData>({
     name: "",
     email: "",
     phone: "",
-    sector: "",
-    contact: ""
+    company: "",
+    industry: ""
   });
 
   // تحميل بيانات العميل عند فتح النموذج في وضع التعديل
@@ -55,32 +57,51 @@ export const ClientForm = ({ isEdit = false, clientData: initialClientData, onSu
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // التحقق من صحة النموذج
     if (!clientData.name || !clientData.email) {
       toast.error("يرجى إدخال اسم العميل والبريد الإلكتروني على الأقل");
       return;
     }
 
-    // إرسال بيانات النموذج (في التطبيق الحقيقي، سيتم استدعاء API)
-    if (isEdit) {
-      toast.success(`تم تحديث بيانات العميل "${clientData.name}" بنجاح`);
-      if (onSuccess) onSuccess(clientData);
-    } else {
-      toast.success(`تم إضافة العميل "${clientData.name}" بنجاح`);
-    }
-    
-    setOpen(false);
-    
-    // إعادة تعيين النموذج إذا كنا في وضع الإضافة فقط
-    if (!isEdit) {
-      setClientData({
-        name: "",
-        email: "",
-        phone: "",
-        sector: "",
-        contact: ""
-      });
+    try {
+      if (isEdit && initialClientData?.id) {
+        const result = await updateClient(initialClientData.id, {
+          name: clientData.name,
+          email: clientData.email || null,
+          phone: clientData.phone || null,
+          company: clientData.company || null,
+          industry: clientData.industry || null
+        });
+        if (result && onSuccess) onSuccess(clientData);
+      } else {
+        const result = await addClient({
+          name: clientData.name,
+          email: clientData.email || null,
+          phone: clientData.phone || null,
+          company: clientData.company || null,
+          industry: clientData.industry || null,
+          status: 'نشط'
+        });
+        if (result) {
+          toast.success(`تم إضافة العميل "${clientData.name}" بنجاح`);
+        }
+      }
+      
+      setOpen(false);
+      
+      // إعادة تعيين النموذج إذا كنا في وضع الإضافة فقط
+      if (!isEdit) {
+        setClientData({
+          name: "",
+          email: "",
+          phone: "",
+          company: "",
+          industry: ""
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting client form:', error);
     }
   };
 
@@ -94,8 +115,8 @@ export const ClientForm = ({ isEdit = false, clientData: initialClientData, onSu
         name: "",
         email: "",
         phone: "",
-        sector: "",
-        contact: ""
+        company: "",
+        industry: ""
       });
     } else if (isEdit && initialClientData) {
       // إعادة البيانات الأصلية إذا كنا في وضع التعديل
@@ -156,20 +177,20 @@ export const ClientForm = ({ isEdit = false, clientData: initialClientData, onSu
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="sector" className="text-right">القطاع</label>
+            <label htmlFor="company" className="text-right">الشركة</label>
             <Input 
-              id="sector" 
+              id="company" 
               className="col-span-3" 
-              value={clientData.sector}
+              value={clientData.company}
               onChange={handleInputChange}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="contact" className="text-right">جهة الاتصال</label>
+            <label htmlFor="industry" className="text-right">الصناعة</label>
             <Input 
-              id="contact" 
+              id="industry" 
               className="col-span-3" 
-              value={clientData.contact}
+              value={clientData.industry}
               onChange={handleInputChange}
             />
           </div>
@@ -178,8 +199,8 @@ export const ClientForm = ({ isEdit = false, clientData: initialClientData, onSu
           <Button type="button" variant="outline" onClick={handleCancel}>
             إلغاء
           </Button>
-          <Button type="button" onClick={handleSubmit}>
-            {isEdit ? "حفظ التغييرات" : "إضافة"}
+          <Button type="button" onClick={handleSubmit} disabled={loading}>
+            {loading ? "جاري الحفظ..." : (isEdit ? "حفظ التغييرات" : "إضافة")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -10,15 +10,9 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppSidebar } from "@/components/shared/AppSidebar";
-import { designsData } from "@/components/data/mockData";
+import { useDesignsData } from "@/hooks/useDesignsData";
 import { Design } from "@/types/design";
-
-// بيانات افتراضية للتصاميم
-const statuses = {
-  "معتمد": { count: designsData.filter(d => d.category === "معتمد").length, color: "bg-green-100", textColor: "text-green-800", borderColor: "border-green-500" },
-  "قيد المراجعة": { count: designsData.filter(d => d.category === "قيد المراجعة").length, color: "bg-yellow-100", textColor: "text-yellow-800", borderColor: "border-yellow-500" },
-  "مسودة": { count: designsData.filter(d => d.category === "مسودة").length, color: "bg-gray-100", textColor: "text-gray-800", borderColor: "border-gray-500" }
-};
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Designs = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,12 +21,22 @@ const Designs = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const navigate = useNavigate();
   
+  // استخدام البيانات الحقيقية من قاعدة البيانات
+  const { designs, loading, handleStatusChange } = useDesignsData();
+  
   // تصفية التصاميم بناءً على البحث والفئة المحددة
-  const filteredDesigns = designsData.filter(design => 
+  const filteredDesigns = designs.filter(design => 
     (design.title.includes(searchQuery) || 
     design.author.includes(searchQuery)) && 
     (selectedCategory === "الكل" || design.category === selectedCategory)
   );
+
+  // إحصائيات التصاميم حسب الحالة
+  const statuses = {
+    "معتمد": { count: designs.filter(d => d.category === "معتمد").length, color: "bg-green-100", textColor: "text-green-800", borderColor: "border-green-500" },
+    "قيد المراجعة": { count: designs.filter(d => d.category === "قيد المراجعة").length, color: "bg-yellow-100", textColor: "text-yellow-800", borderColor: "border-yellow-500" },
+    "مسودة": { count: designs.filter(d => d.category === "مسودة").length, color: "bg-gray-100", textColor: "text-gray-800", borderColor: "border-gray-500" }
+  };
 
   const handleAddDesign = () => {
     navigate("/add-design");
@@ -187,10 +191,22 @@ const Designs = () => {
             </div>
             
             <div className="grid gap-6 grid-cols-1">
-              {viewMode === "list" ? (
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center space-x-4 space-x-reverse">
+                      <Skeleton className="h-12 w-12 rounded-lg" />
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : viewMode === "list" ? (
                 filteredDesigns.length > 0 ? (
                   filteredDesigns.map(design => (
-                    <DesignCard key={design.id} design={design} viewMode="list" onStatusChange={() => {}} />
+                    <DesignCard key={design.id} design={design} viewMode="list" onStatusChange={handleStatusChange} />
                   ))
                 ) : (
                   <div className="col-span-full text-center py-12">
@@ -211,7 +227,7 @@ const Designs = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredDesigns.length > 0 ? (
                     filteredDesigns.map(design => (
-                      <DesignCard key={design.id} design={design} viewMode="grid" onStatusChange={() => {}} />
+                      <DesignCard key={design.id} design={design} viewMode="grid" onStatusChange={handleStatusChange} />
                     ))
                   ) : (
                     <div className="col-span-full text-center py-12">

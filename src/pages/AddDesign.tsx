@@ -1,20 +1,27 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, ArrowRight, X } from "lucide-react";
+import { Bell, ArrowRight, X, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useDesigns } from "@/hooks/useDesigns";
+import { useClients } from "@/hooks/useClients";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const AddDesign = () => {
   const navigate = useNavigate();
+  const { addDesign, uploadImage, loading } = useDesigns();
+  const { clients } = useClients();
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "ترويجي",
     description: "",
-    image: "/placeholder.svg",
+    image_url: null as string | null,
+    client_id: null as string | null,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -22,7 +29,25 @@ const AddDesign = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const imageUrl = await uploadImage(file);
+      if (imageUrl) {
+        setFormData(prev => ({ ...prev, image_url: imageUrl }));
+        toast.success("تم رفع الصورة بنجاح");
+      }
+    } catch (error) {
+      toast.error("فشل في رفع الصورة");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
@@ -32,8 +57,19 @@ const AddDesign = () => {
     }
     
     // Submit form
-    toast.success("تم إضافة التصميم بنجاح");
-    setTimeout(() => navigate("/designs"), 1500);
+    const result = await addDesign({
+      title: formData.title,
+      category: formData.category,
+      description: formData.description,
+      image_url: formData.image_url,
+      client_id: formData.client_id,
+      status: 'مسودة'
+    });
+
+    if (result) {
+      toast.success("تم إضافة التصميم بنجاح");
+      navigate("/designs");
+    }
   };
 
   const handleCancel = () => {
@@ -88,19 +124,33 @@ const AddDesign = () => {
               
               <div>
                 <label htmlFor="category" className="block text-sm font-medium mb-2">الفئة *</label>
-                <select 
-                  id="category" 
-                  name="category" 
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-md py-2 px-3 text-right"
-                >
-                  <option value="ترويجي">ترويجي</option>
-                  <option value="هوية بصرية">هوية بصرية</option>
-                  <option value="وسائل تواصل">وسائل تواصل</option>
-                  <option value="طباعة">طباعة</option>
-                  <option value="ويب">ويب</option>
-                </select>
+                <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                  <SelectTrigger className="text-right">
+                    <SelectValue placeholder="اختر الفئة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ترويجي">ترويجي</SelectItem>
+                    <SelectItem value="هوية بصرية">هوية بصرية</SelectItem>
+                    <SelectItem value="وسائل تواصل">وسائل تواصل</SelectItem>
+                    <SelectItem value="طباعة">طباعة</SelectItem>
+                    <SelectItem value="ويب">ويب</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label htmlFor="client_id" className="block text-sm font-medium mb-2">العميل</label>
+                <Select value={formData.client_id || ""} onValueChange={(value) => setFormData(prev => ({ ...prev, client_id: value || null }))}>
+                  <SelectTrigger className="text-right">
+                    <SelectValue placeholder="اختر العميل (اختياري)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">بدون عميل</SelectItem>
+                    {clients.map(client => (
+                      <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
@@ -118,12 +168,30 @@ const AddDesign = () => {
               <div>
                 <label className="block text-sm font-medium mb-2">صورة التصميم</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
-                  <div className="mx-auto h-32 w-32 overflow-hidden bg-gray-100">
-                    <img src={formData.image} alt="Design preview" className="h-full w-full object-cover" />
+                  <div className="mx-auto h-32 w-32 overflow-hidden bg-gray-100 rounded-lg">
+                    <img 
+                      src={formData.image_url || "/placeholder.svg"} 
+                      alt="Design preview" 
+                      className="h-full w-full object-cover" 
+                    />
                   </div>
                   <div className="mt-4">
-                    <Button type="button" variant="outline" className="mx-auto" onClick={() => toast.info("سيتم فتح نافذة اختيار الصورة")}>
-                      رفع صورة
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="mx-auto" 
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      disabled={uploading}
+                    >
+                      <Upload className="h-4 w-4 ml-2" />
+                      {uploading ? "جاري الرفع..." : "رفع صورة"}
                     </Button>
                   </div>
                 </div>
@@ -133,8 +201,8 @@ const AddDesign = () => {
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   إلغاء
                 </Button>
-                <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                  <span>إضافة التصميم</span>
+                <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={loading}>
+                  <span>{loading ? "جاري الحفظ..." : "إضافة التصميم"}</span>
                   <ArrowRight className="mr-2 h-4 w-4" />
                 </Button>
               </div>

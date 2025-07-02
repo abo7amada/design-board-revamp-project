@@ -181,12 +181,12 @@ export const ClientsTable = ({ filteredClients }: ClientsTableProps) => {
                           <ClientForm 
                             isEdit={true} 
                             clientData={{
-                              id: client.id,
+                              id: client.id.toString(),
                               name: client.name,
                               email: client.email,
                               phone: client.phone || "",
-                              sector: client.sector || "",
-                              contact: client.contact || ""
+                              company: client.sector || "",
+                              industry: client.contact || ""
                             }}
                             onSuccess={handleClientUpdate}
                             trigger={

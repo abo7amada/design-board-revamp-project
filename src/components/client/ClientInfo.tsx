@@ -29,8 +29,8 @@ export const ClientInfo = ({ currentClient }: ClientInfoProps) => {
             <p className="font-semibold">{currentClient?.phone || "غير متوفر"}</p>
           </div>
           <div>
-            <p className="text-gray-500 mb-1">القطاع</p>
-            <p className="font-semibold">{currentClient?.sector || "غير متوفر"}</p>
+            <p className="text-gray-500 mb-1">الشركة</p>
+            <p className="font-semibold">{currentClient?.company || "غير متوفر"}</p>
           </div>
           <div>
             <p className="text-gray-500 mb-1">عدد المشاريع</p>
@@ -48,12 +48,12 @@ export const ClientInfo = ({ currentClient }: ClientInfoProps) => {
           <ClientForm 
             isEdit={true} 
             clientData={{
-              id: currentClient?.id || 0,
+              id: currentClient?.id || "",
               name: currentClient?.name || "",
               email: currentClient?.email || "",
               phone: currentClient?.phone || "",
-              sector: currentClient?.sector || "",
-              contact: currentClient?.contact || ""
+              company: currentClient?.company || "",
+              industry: currentClient?.industry || ""
             }}
             onSuccess={(data) => toast.success(`تم تحديث بيانات العميل: ${data.name}`)}
           />
