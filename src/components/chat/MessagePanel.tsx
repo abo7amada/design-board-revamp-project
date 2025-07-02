@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,20 +10,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-
-interface Message {
-  id: string;
-  content: string;
-  sender: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  timestamp: Date;
-  reactions?: { emoji: string; count: number }[];
-  attachments?: { name: string; url: string; type: string }[];
-  isDesignRequest?: boolean;
-}
+import { useChat } from "@/hooks/useChat";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MessagePanelProps {
   isOpen: boolean;
@@ -34,39 +21,8 @@ interface MessagePanelProps {
 }
 
 const MessagePanel = ({ isOpen, onClose, designId, designTitle }: MessagePanelProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "مرحبًا، ما رأيك في هذا التصميم؟",
-      sender: {
-        id: "user1",
-        name: "أحمد محمد",
-        avatar: "https://i.pravatar.cc/150?img=1",
-      },
-      timestamp: new Date(Date.now() - 3600000 * 24),
-    },
-    {
-      id: "2",
-      content: "يبدو رائعًا! أحب الألوان المستخدمة.",
-      sender: {
-        id: "user2",
-        name: "سارة علي",
-        avatar: "https://i.pravatar.cc/150?img=5",
-      },
-      timestamp: new Date(Date.now() - 3600000 * 12),
-    },
-    {
-      id: "3",
-      content: "هل يمكننا تغيير الخط؟ أعتقد أنه يحتاج إلى تحسين.",
-      sender: {
-        id: "user3",
-        name: "محمد أحمد",
-        avatar: "https://i.pravatar.cc/150?img=3",
-      },
-      timestamp: new Date(Date.now() - 3600000 * 2),
-      reactions: [{ emoji: "👍", count: 2 }],
-    },
-  ]);
+  const { user } = useAuth();
+  const { messages, loading, sendMessage, activeChatRoom } = useChat();
   
   const [newMessage, setNewMessage] = useState("");
   const [activeTab, setActiveTab] = useState("chat");
@@ -86,47 +42,39 @@ const MessagePanel = ({ isOpen, onClose, designId, designTitle }: MessagePanelPr
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
   
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !activeChatRoom) return;
     
-    const message: Message = {
-      id: Date.now().toString(),
-      content: newMessage,
-      sender: {
-        id: "currentUser",
-        name: "أنت",
-      },
-      timestamp: new Date(),
-    };
-    
-    setMessages([...messages, message]);
-    setNewMessage("");
-    toast.success("تم إرسال الرسالة");
+    try {
+      await sendMessage(activeChatRoom, newMessage);
+      setNewMessage("");
+      toast.success("تم إرسال الرسالة");
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error("خطأ في إرسال الرسالة");
+    }
   };
 
-  const handleSendFeedback = () => {
-    if (!feedbackTitle.trim() || !feedbackDescription.trim()) {
+  const handleSendFeedback = async () => {
+    if (!feedbackTitle.trim() || !feedbackDescription.trim() || !activeChatRoom) {
       toast.error("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
     
-    const message: Message = {
-      id: Date.now().toString(),
-      content: `**طلب تعديل:** ${feedbackTitle}\n\n${feedbackDescription}${selectedFile ? '\n\nتم إرفاق ملف: ' + selectedFile.name : ''}`,
-      sender: {
-        id: "currentUser",
-        name: "أنت",
-      },
-      timestamp: new Date(),
-      isDesignRequest: true,
-    };
-    
-    setMessages([...messages, message]);
-    setFeedbackTitle("");
-    setFeedbackDescription("");
-    setSelectedFile(null);
-    setActiveTab("chat");
-    toast.success("تم إرسال طلب التعديل بنجاح");
+    try {
+      const feedbackContent = `**طلب تعديل:** ${feedbackTitle}\n\n${feedbackDescription}${selectedFile ? '\n\nتم إرفاق ملف: ' + selectedFile.name : ''}`;
+      
+      await sendMessage(activeChatRoom, feedbackContent, 'design_discussion', designId);
+      
+      setFeedbackTitle("");
+      setFeedbackDescription("");
+      setSelectedFile(null);
+      setActiveTab("chat");
+      toast.success("تم إرسال طلب التعديل بنجاح");
+    } catch (error) {
+      console.error('Error sending feedback:', error);
+      toast.error("خطأ في إرسال طلب التعديل");
+    }
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -146,8 +94,8 @@ const MessagePanel = ({ isOpen, onClose, designId, designTitle }: MessagePanelPr
     }
   };
   
-  const formatMessageTime = (date: Date) => {
-    return formatDistanceToNow(date, { addSuffix: true, locale: arSA });
+  const formatMessageTime = (date: string) => {
+    return formatDistanceToNow(new Date(date), { addSuffix: true, locale: arSA });
   };
   
   return (
@@ -165,51 +113,56 @@ const MessagePanel = ({ isOpen, onClose, designId, designTitle }: MessagePanelPr
           
           <TabsContent value="chat" className="flex-1 flex flex-col">
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-              {messages.map((message) => (
-                <div 
-                  key={message.id} 
-                  className={`flex ${message.sender.id === "currentUser" ? "justify-end" : "justify-start"}`}
-                >
-                  <div className={`flex gap-2 max-w-[80%] ${message.sender.id === "currentUser" ? "flex-row-reverse" : "flex-row"}`}>
-                    <Avatar className="h-8 w-8">
-                      {message.sender.avatar && <AvatarImage src={message.sender.avatar} alt={message.sender.name} />}
-                      <AvatarFallback>{message.sender.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    
-                    <div>
-                      <div className={`flex items-center gap-2 ${message.sender.id === "currentUser" ? "justify-end" : "justify-start"}`}>
-                        <span className="text-sm font-medium">{message.sender.name}</span>
-                        <span className="text-xs text-muted-foreground">{formatMessageTime(message.timestamp)}</span>
-                      </div>
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">جاري تحميل الرسائل...</p>
+                </div>
+              ) : messages.length > 0 ? (
+                messages.map((message) => (
+                  <div 
+                    key={message.id} 
+                    className={`flex ${message.user_id === user?.id ? "justify-end" : "justify-start"}`}
+                  >
+                    <div className={`flex gap-2 max-w-[80%] ${message.user_id === user?.id ? "flex-row-reverse" : "flex-row"}`}>
+                      <Avatar className="h-8 w-8">
+                        {message.user_profile?.avatar_url && <AvatarImage src={message.user_profile.avatar_url} alt={message.user_profile.full_name || 'User'} />}
+                        <AvatarFallback>{(message.user_profile?.full_name || 'U').charAt(0)}</AvatarFallback>
+                      </Avatar>
                       
-                      <div className={`mt-1 p-3 rounded-lg ${
-                        message.isDesignRequest 
-                          ? "bg-amber-100 text-amber-900 border border-amber-300" 
-                          : message.sender.id === "currentUser" 
-                            ? "bg-primary text-primary-foreground" 
-                            : "bg-muted"
-                      }`}>
-                        {message.isDesignRequest ? (
-                          <div className="whitespace-pre-wrap">{message.content}</div>
-                        ) : (
-                          message.content
-                        )}
-                      </div>
-                      
-                      {message.reactions && message.reactions.length > 0 && (
-                        <div className="flex gap-1 mt-1">
-                          {message.reactions.map((reaction, index) => (
-                            <div key={index} className="bg-background border rounded-full px-2 py-0.5 text-xs flex items-center gap-1">
-                              <span>{reaction.emoji}</span>
-                              <span>{reaction.count}</span>
-                            </div>
-                          ))}
+                      <div>
+                        <div className={`flex items-center gap-2 ${message.user_id === user?.id ? "justify-end" : "justify-start"}`}>
+                          <span className="text-sm font-medium">{message.user_profile?.full_name || 'مستخدم'}</span>
+                          <span className="text-xs text-muted-foreground">{formatMessageTime(message.created_at)}</span>
                         </div>
-                      )}
+                        
+                        <div className={`mt-1 p-3 rounded-lg ${
+                          message.message_type === 'design_discussion' 
+                            ? "bg-amber-100 text-amber-900 border border-amber-300" 
+                            : message.user_id === user?.id 
+                              ? "bg-primary text-primary-foreground" 
+                              : "bg-muted"
+                        }`}>
+                          {message.message_type === 'design_discussion' ? (
+                            <div className="whitespace-pre-wrap">{message.content}</div>
+                          ) : (
+                            message.content
+                          )}
+                          
+                          {message.design && (
+                            <div className="mt-2 p-2 bg-white/10 rounded border">
+                              <span className="text-xs">تصميم: {message.design.title}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">لا توجد رسائل بعد</p>
                 </div>
-              ))}
+              )}
               <div ref={messagesEndRef} />
             </div>
             
@@ -228,7 +181,7 @@ const MessagePanel = ({ isOpen, onClose, designId, designTitle }: MessagePanelPr
                     type="button" 
                     size="icon" 
                     onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
+                    disabled={!newMessage.trim() || loading}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -308,7 +261,7 @@ const MessagePanel = ({ isOpen, onClose, designId, designTitle }: MessagePanelPr
             <Button 
               className="w-full mt-6" 
               onClick={handleSendFeedback}
-              disabled={!feedbackTitle.trim() || !feedbackDescription.trim()}
+              disabled={!feedbackTitle.trim() || !feedbackDescription.trim() || loading}
             >
               إرسال طلب التعديل
             </Button>

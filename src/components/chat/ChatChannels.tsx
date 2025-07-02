@@ -1,85 +1,86 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PlusCircle, Hash, Lock, MessageSquare, Users, Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
-
-interface Channel {
-  id: string;
-  name: string;
-  type: "public" | "private";
-  unread: number;
-  members: number;
-  isActive: boolean;
-  muted: boolean;
-}
-
-const initialChannels: Channel[] = [
-  { id: "general", name: "عام", type: "public", unread: 0, members: 32, isActive: true, muted: false },
-  { id: "announcements", name: "الإعلانات", type: "public", unread: 3, members: 30, isActive: false, muted: false },
-  { id: "design-team", name: "فريق التصميم", type: "private", unread: 12, members: 8, isActive: false, muted: false },
-  { id: "marketing", name: "التسويق", type: "public", unread: 0, members: 15, isActive: false, muted: true },
-  { id: "client-feedback", name: "ملاحظات العملاء", type: "private", unread: 5, members: 10, isActive: false, muted: false },
-];
+import { useChat } from "@/hooks/useChat";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ChatChannels = () => {
-  const [channels, setChannels] = useState<Channel[]>(initialChannels);
+  const { user } = useAuth();
+  const { chatRooms, loading, fetchChatRooms, joinChatRoom, setActiveChat, activeChatRoom } = useChat();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [newChannelName, setNewChannelName] = useState("");
-  const [newChannelType, setNewChannelType] = useState<"public" | "private">("public");
+  const [newChannelType, setNewChannelType] = useState<"channel" | "direct">("channel");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const filteredChannels = channels.filter(channel => 
-    channel.name.includes(searchTerm)
+  // Load chat rooms on component mount
+  useEffect(() => {
+    if (user) {
+      fetchChatRooms();
+    }
+  }, [user, fetchChatRooms]);
+
+  const filteredChannels = chatRooms.filter(room => 
+    room.name.includes(searchTerm)
   );
 
   const handleChannelClick = (channelId: string) => {
-    setChannels(channels.map(channel => ({
-      ...channel,
-      isActive: channel.id === channelId,
-      unread: channel.id === channelId ? 0 : channel.unread
-    })));
+    setActiveChat(channelId);
+    joinChatRoom(channelId);
   };
 
-  const handleCreateChannel = () => {
+  const handleCreateChannel = async () => {
     if (!newChannelName.trim()) {
       toast.error("الرجاء إدخال اسم القناة");
       return;
     }
     
-    const newChannel: Channel = {
-      id: `channel-${Date.now()}`,
-      name: newChannelName.trim(),
-      type: newChannelType,
-      unread: 0,
-      members: 1,
-      isActive: false,
-      muted: false
-    };
-    
-    setChannels([...channels, newChannel]);
-    setNewChannelName("");
-    setNewChannelType("public");
-    setIsDialogOpen(false);
-    toast.success(`تم إنشاء قناة ${newChannelName} بنجاح`);
-  };
+    try {
+      const { data, error } = await supabase
+        .from('chat_rooms')
+        .insert([
+          {
+            name: newChannelName.trim(),
+            type: newChannelType,
+            created_by: user?.id,
+            description: `قناة ${newChannelName}`
+          }
+        ])
+        .select()
+        .single();
 
-  const toggleMuteChannel = (channelId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setChannels(channels.map(channel => 
-      channel.id === channelId 
-        ? { ...channel, muted: !channel.muted } 
-        : channel
-    ));
-    
-    const channel = channels.find(c => c.id === channelId);
-    if (channel) {
-      toast.success(`تم ${channel.muted ? 'تفعيل' : 'كتم'} الإشعارات لقناة ${channel.name}`);
+      if (error) throw error;
+
+      // Join the new room
+      await joinChatRoom(data.id);
+      
+      setNewChannelName("");
+      setNewChannelType("channel");
+      setIsDialogOpen(false);
+      toast.success(`تم إنشاء قناة ${newChannelName} بنجاح`);
+      
+      // Refresh chat rooms
+      fetchChatRooms();
+    } catch (error) {
+      console.error('Error creating channel:', error);
+      toast.error('خطأ في إنشاء القناة');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="w-full h-full flex flex-col border-l">
+        <div className="p-4 text-center">
+          <p className="text-gray-500">جاري تحميل القنوات...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full flex flex-col border-l">
@@ -113,8 +114,8 @@ export const ChatChannels = () => {
                   <div className="flex space-x-4 space-x-reverse">
                     <Button
                       type="button"
-                      variant={newChannelType === "public" ? "default" : "outline"}
-                      onClick={() => setNewChannelType("public")}
+                      variant={newChannelType === "channel" ? "default" : "outline"}
+                      onClick={() => setNewChannelType("channel")}
                       className="flex items-center gap-2 flex-1"
                     >
                       <Hash className="h-4 w-4" />
@@ -122,8 +123,8 @@ export const ChatChannels = () => {
                     </Button>
                     <Button
                       type="button"
-                      variant={newChannelType === "private" ? "default" : "outline"}
-                      onClick={() => setNewChannelType("private")}
+                      variant={newChannelType === "direct" ? "default" : "outline"}
+                      onClick={() => setNewChannelType("direct")}
                       className="flex items-center gap-2 flex-1"
                     >
                       <Lock className="h-4 w-4" />
@@ -171,81 +172,36 @@ export const ChatChannels = () => {
       
       <div className="flex-1 overflow-y-auto py-2">
         <div className="px-2">
-          <div className="text-xs font-medium text-gray-500 px-3 py-2">القنوات العامة</div>
-          {filteredChannels
-            .filter(channel => channel.type === "public")
-            .map(channel => (
+          <div className="text-xs font-medium text-gray-500 px-3 py-2">القنوات المتاحة</div>
+          {filteredChannels.length > 0 ? (
+            filteredChannels.map(channel => (
               <button
                 key={channel.id}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm ${
-                  channel.isActive
+                  activeChatRoom === channel.id
                     ? "bg-green-50 text-green-700 font-medium"
                     : "hover:bg-gray-100 text-gray-700"
                 }`}
                 onClick={() => handleChannelClick(channel.id)}
               >
                 <div className="flex items-center gap-2">
-                  <Hash className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{channel.name}</span>
-                  {channel.unread > 0 && (
-                    <span className="mr-auto bg-green-600 text-white text-xs font-medium rounded-full px-2 py-0.5">
-                      {channel.unread}
-                    </span>
+                  {channel.type === 'direct' ? (
+                    <Lock className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <Hash className="h-4 w-4 shrink-0" />
                   )}
+                  <span className="truncate">{channel.name}</span>
                 </div>
                 <div className="flex items-center text-gray-400">
-                  <button
-                    onClick={(e) => toggleMuteChannel(channel.id, e)}
-                    className="p-1 hover:bg-gray-200 rounded-full"
-                  >
-                    {channel.muted ? (
-                      <BellOff className="h-3.5 w-3.5" />
-                    ) : (
-                      <Bell className="h-3.5 w-3.5" />
-                    )}
-                  </button>
+                  <span className="text-xs">{channel.type === 'direct' ? 'خاصة' : 'عامة'}</span>
                 </div>
               </button>
-            ))}
-        </div>
-        
-        <div className="px-2 mt-4">
-          <div className="text-xs font-medium text-gray-500 px-3 py-2">القنوات الخاصة</div>
-          {filteredChannels
-            .filter(channel => channel.type === "private")
-            .map(channel => (
-              <button
-                key={channel.id}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm ${
-                  channel.isActive
-                    ? "bg-green-50 text-green-700 font-medium"
-                    : "hover:bg-gray-100 text-gray-700"
-                }`}
-                onClick={() => handleChannelClick(channel.id)}
-              >
-                <div className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{channel.name}</span>
-                  {channel.unread > 0 && (
-                    <span className="mr-auto bg-green-600 text-white text-xs font-medium rounded-full px-2 py-0.5">
-                      {channel.unread}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center text-gray-400">
-                  <button
-                    onClick={(e) => toggleMuteChannel(channel.id, e)}
-                    className="p-1 hover:bg-gray-200 rounded-full"
-                  >
-                    {channel.muted ? (
-                      <BellOff className="h-3.5 w-3.5" />
-                    ) : (
-                      <Bell className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                </div>
-              </button>
-            ))}
+            ))
+          ) : (
+            <div className="px-3 py-4 text-center text-gray-500 text-sm">
+              لا توجد قنوات متاحة
+            </div>
+          )}
         </div>
       </div>
       
@@ -265,11 +221,10 @@ export const ChatChannels = () => {
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-gray-500" />
             <span className="text-sm font-medium">الأعضاء النشطون</span>
-            <span className="bg-green-100 text-green-800 text-xs rounded-full px-2">12</span>
+            <span className="bg-green-100 text-green-800 text-xs rounded-full px-2">
+              {filteredChannels.length}
+            </span>
           </div>
-          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
-            <PlusCircle className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>
