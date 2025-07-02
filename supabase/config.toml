@@ -40,6 +40,30 @@ verify_jwt = false
 [functions.publish-to-facebook]
 verify_jwt = true
 
+[functions.instagram-oauth]
+verify_jwt = false
+
+[functions.publish-to-instagram]
+verify_jwt = true
+
+[functions.twitter-oauth]
+verify_jwt = false
+
+[functions.publish-to-twitter]
+verify_jwt = true
+
+[functions.linkedin-oauth]
+verify_jwt = false
+
+[functions.publish-to-linkedin]
+verify_jwt = true
+
+[functions.tiktok-oauth]
+verify_jwt = false
+
+[functions.publish-to-tiktok]
+verify_jwt = true
+
 [functions.schedule-posts]
 verify_jwt = false
 
