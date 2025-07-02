@@ -22,6 +22,7 @@ import { usePlatformSelection } from "@/hooks/usePlatformSelection";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { useSocialMedia } from "@/hooks/useSocialMedia";
 import { ConnectedPlatformsSelector } from "./ConnectedPlatformsSelector";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Design {
   id: number;
@@ -62,7 +63,7 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     handleSelectAISuggestion
   } = useAISuggestions(isOpen, design.title, design.author);
   
-  const { publishPost, loading: publishLoading } = useSocialMedia();
+  const { socialAccounts, publishPost, loading: publishLoading } = useSocialMedia();
   
   const [caption, setCaption] = useState("");
   const [publishDate, setPublishDate] = useState<Date | undefined>(new Date());
@@ -92,17 +93,62 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     }
     
     try {
-      // For now, just show success - full integration would require creating post in DB first
       const selectedPlatformsList = Object.entries(platforms).filter(([_, value]) => value).map(([key]) => key);
       
-      // TODO: Create post in database first, then call publishPost with postId and account IDs
-      console.log("Publishing to platforms:", selectedPlatformsList);
-      console.log("Content:", caption);
+      if (selectedPlatformsList.length === 0) {
+        toast.error("يرجى اختيار منصة واحدة على الأقل");
+        return;
+      }
+
+      // Create post in database first
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .insert({
+          title: design.title,
+          content: caption,
+          design_id: design.id,
+          status: isScheduled ? 'scheduled' : 'published',
+          platforms: selectedPlatformsList,
+          scheduled_at: isScheduled && publishDate ? 
+            new Date(`${publishDate.toISOString().split('T')[0]}T${publishTime}:00`).toISOString() : null,
+          published_at: !isScheduled ? new Date().toISOString() : null
+        })
+        .select()
+        .single();
+
+      if (postError) throw postError;
+
+      // Get connected social accounts for selected platforms
+      const connectedAccounts = socialAccounts.filter(account => 
+        selectedPlatformsList.includes(account.platform)
+      );
+
+      if (connectedAccounts.length === 0) {
+        toast.error("لا توجد حسابات متصلة للمنصات المختارة");
+        return;
+      }
+
+      if (isScheduled) {
+        // For scheduled posts, create publishing history records as pending
+        const historyRecords = connectedAccounts.map(account => ({
+          post_id: postData.id,
+          social_account_id: account.id,
+          platform: account.platform,
+          status: 'pending' as const
+        }));
+
+        await supabase
+          .from('publishing_history')
+          .insert(historyRecords);
+
+        toast.success("تم جدولة النشر بنجاح");
+      } else {
+        // For immediate publishing, call publishPost
+        const accountIds = connectedAccounts.map(acc => acc.id);
+        await publishPost(postData.id, accountIds, caption, design.image);
+        toast.success("تم نشر المحتوى بنجاح");
+      }
       
-      // Show success message
-      toast.success(isScheduled ? "تم جدولة النشر بنجاح" : "تم إنشاء المنشور بنجاح");
-      
-      // Close modal
       onClose();
     } catch (error) {
       toast.error("فشل في إنشاء المنشور");

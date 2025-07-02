@@ -1,6 +1,6 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { BarChart, Calendar, Home, Settings, Users, LogOut } from "lucide-react";
+import { BarChart, Calendar, Home, Settings, Users, LogOut, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -73,6 +73,16 @@ export const AppSidebar = () => {
               >
                 <BarChart className="h-5 w-5" />
                 <span className="text-lg">الإحصائيات</span>
+              </Button>
+            </li>
+            <li>
+              <Button 
+                variant="link" 
+                className={`w-full justify-start gap-2 ${isActive("/social-integrations") ? "text-green-700" : "text-gray-600 hover:text-green-700"}`} 
+                onClick={() => handleNavigation("/social-integrations")}
+              >
+                <Share2 className="h-5 w-5" />
+                <span className="text-lg">المنصات الاجتماعية</span>
               </Button>
             </li>
             <li>
