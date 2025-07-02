@@ -20,6 +20,8 @@ import AITabContent from "./AITabContent";
 // Import the custom hooks
 import { usePlatformSelection } from "@/hooks/usePlatformSelection";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { useSocialMedia } from "@/hooks/useSocialMedia";
+import { ConnectedPlatformsSelector } from "./ConnectedPlatformsSelector";
 
 interface Design {
   id: number;
@@ -60,6 +62,8 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     handleSelectAISuggestion
   } = useAISuggestions(isOpen, design.title, design.author);
   
+  const { publishPost, loading: publishLoading } = useSocialMedia();
+  
   const [caption, setCaption] = useState("");
   const [publishDate, setPublishDate] = useState<Date | undefined>(new Date());
   const [publishTime, setPublishTime] = useState("12:00");
@@ -76,33 +80,34 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
     }
   }, [isOpen]);
   
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!selectedPlatform && platformSpecificStep === 1) {
       toast.error("يرجى اختيار منصة واحدة على الأقل");
       return;
     }
     
-    // Gather publishing data
-    const publishData = {
-      designId: design.id,
-      designTitle: design.title,
-      platforms: Object.entries(platforms).filter(([_, value]) => value).map(([key]) => key),
-      caption,
-      scheduled: isScheduled,
-      date: publishDate ? format(publishDate, 'yyyy-MM-dd') : null,
-      time: publishTime,
-      linkUrl: linkUrl || undefined,
-      size: selectedSize,
-      autoResize: autoResizeEnabled
-    };
+    if (!caption.trim()) {
+      toast.error("يرجى إضافة نص للمنشور");
+      return;
+    }
     
-    console.log("بيانات النشر:", publishData);
-    
-    // Show success message
-    toast.success(isScheduled ? "تم جدولة النشر بنجاح" : "تم النشر بنجاح");
-    
-    // Close modal
-    onClose();
+    try {
+      // For now, just show success - full integration would require creating post in DB first
+      const selectedPlatformsList = Object.entries(platforms).filter(([_, value]) => value).map(([key]) => key);
+      
+      // TODO: Create post in database first, then call publishPost with postId and account IDs
+      console.log("Publishing to platforms:", selectedPlatformsList);
+      console.log("Content:", caption);
+      
+      // Show success message
+      toast.success(isScheduled ? "تم جدولة النشر بنجاح" : "تم إنشاء المنشور بنجاح");
+      
+      // Close modal
+      onClose();
+    } catch (error) {
+      toast.error("فشل في إنشاء المنشور");
+      console.error("Publish error:", error);
+    }
   };
 
   // Handle AI suggestion selection
@@ -172,7 +177,13 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
         
         <PublishTabsNav activeTab={activeTab} onTabChange={setActiveTab}>
           <PlatformsTabContent>
-            {renderPlatformSpecificContent()}
+            <div className="space-y-4">
+              {renderPlatformSpecificContent()}
+              <ConnectedPlatformsSelector 
+                selectedPlatforms={Object.entries(platforms).filter(([_, value]) => value).map(([key]) => key)}
+                onPlatformToggle={(platform, enabled) => setPlatforms({...platforms, [platform]: enabled})}
+              />
+            </div>
           </PlatformsTabContent>
           
           <ContentTabContent
@@ -214,7 +225,8 @@ const PublishDesignModal = ({ isOpen, onClose, design }: PublishDesignModalProps
           onClose={onClose}
           onPublish={handlePublish}
           isScheduled={isScheduled}
-          isDisabled={isPublishButtonDisabled}
+          isDisabled={isPublishButtonDisabled || publishLoading}
+          isLoading={publishLoading}
         />
       </DialogContent>
     </Dialog>

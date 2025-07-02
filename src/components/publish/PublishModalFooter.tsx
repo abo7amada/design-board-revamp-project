@@ -6,13 +6,15 @@ interface PublishModalFooterProps {
   onPublish: () => void;
   isScheduled: boolean;
   isDisabled: boolean;
+  isLoading?: boolean;
 }
 
 const PublishModalFooter = ({
   onClose,
   onPublish,
   isScheduled,
-  isDisabled
+  isDisabled,
+  isLoading = false
 }: PublishModalFooterProps) => {
   return (
     <div className="flex justify-between">
@@ -24,7 +26,7 @@ const PublishModalFooter = ({
         onClick={onPublish}
         disabled={isDisabled}
       >
-        {isScheduled ? "جدولة النشر" : "نشر الآن"}
+        {isLoading ? "جاري النشر..." : isScheduled ? "جدولة النشر" : "نشر الآن"}
       </Button>
     </div>
   );

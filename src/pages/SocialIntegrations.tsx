@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { SocialPlatformCard } from "@/components/social/SocialPlatformCard";
+import { ConnectedPlatformsList } from "@/components/social/ConnectedPlatformsList";
+import { useSocialMedia } from "@/hooks/useSocialMedia";
 import { toast } from "sonner";
 import { Network, Wifi, Plus, RefreshCw, Share2 } from "lucide-react";
 
@@ -16,28 +18,48 @@ interface SocialPlatform {
   connected: boolean;
   lastPost?: string;
   audience?: number;
+  accountName?: string;
 }
 
-const initialPlatforms: SocialPlatform[] = [
-  { id: "facebook", name: "فيسبوك", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1200px-Facebook_Logo_%282019%29.png", connected: true, lastPost: "أمس", audience: 12500 },
-  { id: "instagram", name: "إنستجرام", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png", connected: false },
-  { id: "twitter", name: "تويتر", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Logo_of_Twitter.svg/512px-Logo_of_Twitter.svg.png", connected: true, lastPost: "منذ 3 أيام", audience: 8200 },
-  { id: "linkedin", name: "لينكد إن", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/768px-LinkedIn_logo_initials.png", connected: true, lastPost: "منذ أسبوع", audience: 5400 },
-  { id: "tiktok", name: "تيك توك", icon: "https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/TikTok_logo.svg/1200px-TikTok_logo.svg.png", connected: false },
-];
+const platformConfigs = {
+  facebook: { name: "فيسبوك", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1200px-Facebook_Logo_%282019%29.png" },
+  instagram: { name: "إنستجرام", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png" },
+  twitter: { name: "تويتر", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Logo_of_Twitter.svg/512px-Logo_of_Twitter.svg.png" },
+  linkedin: { name: "لينكد إن", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/768px-LinkedIn_logo_initials.png" },
+  tiktok: { name: "تيك توك", icon: "https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/TikTok_logo.svg/1200px-TikTok_logo.svg.png" },
+};
 
 const SocialIntegrations = () => {
-  const [platforms, setPlatforms] = useState<SocialPlatform[]>(initialPlatforms);
+  const { socialAccounts, connectAccount, disconnectAccount, loading } = useSocialMedia();
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
   
-  const handleTogglePlatform = (id: string, enabled: boolean) => {
-    setPlatforms(
-      platforms.map((platform) =>
-        platform.id === id ? { ...platform, connected: enabled } : platform
-      )
-    );
+  const handleTogglePlatform = async (id: string, enabled: boolean) => {
+    if (enabled) {
+      // For now, simulate OAuth flow with a success message
+      toast.success(`تم فتح نافذة توثيق ${platformConfigs[id as keyof typeof platformConfigs]?.name}`);
+      await connectAccount(id);
+    } else {
+      const account = socialAccounts.find(acc => acc.platform === id);
+      if (account) {
+        await disconnectAccount(account.id);
+      }
+    }
   };
+  
+  // Transform social accounts data to platform format
+  const platforms: SocialPlatform[] = Object.entries(platformConfigs).map(([platform, config]) => {
+    const account = socialAccounts.find(acc => acc.platform === platform);
+    return {
+      id: platform,
+      name: config.name,
+      icon: config.icon,
+      connected: !!account,
+      accountName: account?.account_name || account?.platform_username,
+      lastPost: account ? "متصل" : undefined,
+      audience: account ? Math.floor(Math.random() * 10000) + 1000 : undefined, // Mock audience for demo
+    };
+  });
   
   const handleSaveCredentials = () => {
     if (!apiKey || !apiSecret) {
@@ -242,78 +264,56 @@ const SocialIntegrations = () => {
               </TabsContent>
               
               <TabsContent value="analytics">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>تحليلات المنصات الاجتماعية</CardTitle>
-                    <CardDescription>
-                      عرض إحصائيات وتحليلات أداء المحتوى على مختلف المنصات
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {connectedPlatforms.length > 0 ? (
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <Card>
-                            <CardContent className="p-6">
-                              <div className="text-center">
-                                <p className="text-sm text-gray-500 mb-1">إجمالي المتابعين</p>
-                                <p className="text-3xl font-bold">
-                                  {connectedPlatforms.reduce(
-                                    (total, platform) => total + (platform.audience || 0),
-                                    0
-                                  ).toLocaleString()}
-                                </p>
-                                <p className="text-sm text-green-600 mt-2">+5.2% هذا الشهر</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                          <Card>
-                            <CardContent className="p-6">
-                              <div className="text-center">
-                                <p className="text-sm text-gray-500 mb-1">المنشورات المجدولة</p>
-                                <p className="text-3xl font-bold">14</p>
-                                <p className="text-sm text-blue-600 mt-2">6 منشورات هذا الأسبوع</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                          <Card>
-                            <CardContent className="p-6">
-                              <div className="text-center">
-                                <p className="text-sm text-gray-500 mb-1">معدل التفاعل</p>
-                                <p className="text-3xl font-bold">3.8%</p>
-                                <p className="text-sm text-green-600 mt-2">+0.5% مقارنة بالشهر الماضي</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                        
-                        <div className="border rounded-md p-8 text-center bg-gray-50">
-                          <h3 className="text-lg font-medium mb-2">التحليلات التفصيلية</h3>
-                          <p className="text-sm text-gray-500 mb-4">
-                            يمكنك عرض تحليلات مفصلة لكل منصة وكل منشور من خلال لوحة التحكم.
-                          </p>
-                          <Button 
-                            onClick={() => toast.info("سيتم فتح لوحة التحليلات المفصلة")}
-                          >
-                            عرض التحليلات المفصلة
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-gray-500 mb-4">
-                          قم بتوصيل منصة واحدة على الأقل لعرض التحليلات
-                        </p>
-                        <Button 
-                          variant="outline"
-                          onClick={() => toast.info("اختر منصة للاتصال بها")}
-                        >
-                          توصيل منصة
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <div className="space-y-6">
+                  {connectedPlatforms.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card>
+                        <CardContent className="p-6">
+                          <div className="text-center">
+                            <p className="text-sm text-gray-500 mb-1">إجمالي المتابعين</p>
+                            <p className="text-3xl font-bold">
+                              {connectedPlatforms.reduce(
+                                (total, platform) => total + (platform.audience || 0),
+                                0
+                              ).toLocaleString()}
+                            </p>
+                            <p className="text-sm text-green-600 mt-2">+5.2% هذا الشهر</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-6">
+                          <div className="text-center">
+                            <p className="text-sm text-gray-500 mb-1">المنشورات المنشورة</p>
+                            <p className="text-3xl font-bold">{socialAccounts.length}</p>
+                            <p className="text-sm text-blue-600 mt-2">حسابات متصلة</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-6">
+                          <div className="text-center">
+                            <p className="text-sm text-gray-500 mb-1">معدل التفاعل</p>
+                            <p className="text-3xl font-bold">3.8%</p>
+                            <p className="text-sm text-green-600 mt-2">+0.5% مقارنة بالشهر الماضي</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>الحسابات المتصلة وآخر النشاطات</CardTitle>
+                      <CardDescription>
+                        عرض تفصيلي للحسابات المتصلة وتاريخ النشر
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ConnectedPlatformsList />
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
