@@ -6,7 +6,7 @@ import {
   Bell, Calendar as CalendarIcon, LayoutGrid, PencilRuler, 
   Search, Settings, BarChart, Users, Home, ArrowLeft,
   Plus, Filter, ChevronDown, Instagram, Facebook, Twitter, Linkedin, Monitor, MoreHorizontal,
-  Heart, MessageCircle // Added these missing icons
+  Heart, MessageCircle
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -23,155 +23,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuGroup, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PublishDesignModal from "@/components/PublishDesignModal";
+import { usePosts } from "@/hooks/usePosts";
+import { AppSidebar } from "@/components/shared/AppSidebar";
 
-// Enhanced data with social media platforms and status
-const posts = [
-  {
-    id: 1,
-    title: "إطلاق منتج جديد",
-    category: "منشور",
-    image: "/placeholder.svg",
-    date: "2023/05/15",
-    author: "شركة الأفق الأخضر",
-    status: "معتمد",
-    hasDesign: true,
-    platforms: ["facebook", "instagram", "twitter", "linkedin"],
-    stats: {
-      likes: 120,
-      comments: 45,
-      shares: 23,
-      clicks: 89
-    }
-  },
-  {
-    id: 2,
-    title: "ورشة عمل تقنية",
-    category: "مجدول",
-    image: "/placeholder.svg",
-    date: "2023/06/20",
-    author: "شركة الأفق الأخضر",
-    status: "قيد المراجعة",
-    hasDesign: true,
-    platforms: ["facebook", "instagram"],
-    stats: {
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      clicks: 0
-    }
-  },
-  {
-    id: 3,
-    title: "عرض موسم الصيف",
-    category: "مسودة",
-    image: "/placeholder.svg",
-    date: "2023/07/01",
-    author: "مؤسسة نجمة الشمال",
-    status: "مسودة",
-    hasDesign: false,
-    platforms: ["instagram", "twitter"],
-    stats: {
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      clicks: 0
-    }
-  },
-  {
-    id: 4,
-    title: "مقابلة مع المدير التنفيذي",
-    category: "مسودة",
-    image: "/placeholder.svg",
-    date: "2023/08/05",
-    author: "شركة الأفق الأخضر",
-    status: "مسودة",
-    hasDesign: false,
-    platforms: ["linkedin", "facebook"],
-    stats: {
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      clicks: 0
-    }
-  },
-  {
-    id: 5,
-    title: "حملة إعلانية جديدة",
-    category: "منشور",
-    image: "/placeholder.svg",
-    date: "2023/05/05",
-    author: "مؤسسة نجمة الشمال",
-    status: "معتمد",
-    hasDesign: true,
-    platforms: ["facebook", "instagram"],
-    stats: {
-      likes: 210,
-      comments: 65,
-      shares: 48,
-      clicks: 156
-    }
-  },
-  {
-    id: 6,
-    title: "اجتماع فريق التسويق",
-    category: "مجدول",
-    image: "/placeholder.svg",
-    date: "2023/05/10",
-    author: "شركة الأفق الأخضر",
-    status: "قيد المراجعة",
-    hasDesign: false,
-    platforms: ["linkedin"],
-    stats: {
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      clicks: 0
-    }
-  },
-  {
-    id: 7,
-    title: "إطلاق الموقع الجديد",
-    category: "منشور",
-    image: "/placeholder.svg",
-    date: "2023/05/20",
-    author: "شركة الأفق الأخضر",
-    status: "معتمد",
-    hasDesign: true,
-    platforms: ["facebook", "twitter", "linkedin"],
-    stats: {
-      likes: 78,
-      comments: 24,
-      shares: 15,
-      clicks: 67
-    }
-  },
-  {
-    id: 8,
-    title: "استراتيجية وسائل التواصل",
-    category: "مجدول",
-    image: "/placeholder.svg",
-    date: "2023/05/25",
-    author: "مؤسسة نجمة الشمال",
-    status: "قيد المراجعة",
-    hasDesign: true,
-    platforms: ["instagram", "tiktok"],
-    stats: {
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      clicks: 0
-    }
-  }
-];
+// Remove mock data - will use real data from hooks
 
 // Helper function to get platform icon
 const getPlatformIcon = (platform: string) => {
@@ -200,26 +57,14 @@ const CalendarPage = () => {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [selectedDesign, setSelectedDesign] = useState<any | null>(null);
   
-  // تحويل التاريخ إلى صيغة نصية موحدة لسهولة المقارنة
-  const formatDateForComparison = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}/${month}/${day}`;
-  };
-  
-  // تحويل التاريخ النصي في البيانات إلى كائن Date
-  const parsePostDate = (dateString: string) => {
-    const [year, month, day] = dateString.split('/').map(Number);
-    return new Date(year, month - 1, day);
-  };
+  const { posts, loading } = usePosts();
   
   // تصفية المنشورات بناءً على التاريخ المحدد
   const filteredByDatePosts = selectedDate 
     ? posts.filter(post => {
-        const postDate = parsePostDate(post.date);
-        const selectedDateStr = formatDateForComparison(selectedDate);
-        const postDateStr = formatDateForComparison(postDate);
+        const postDate = new Date(post.scheduled_at || post.created_at);
+        const selectedDateStr = selectedDate.toDateString();
+        const postDateStr = postDate.toDateString();
         return postDateStr === selectedDateStr;
       })
     : [];
@@ -228,27 +73,20 @@ const CalendarPage = () => {
   const searchFilteredPosts = searchQuery 
     ? filteredByDatePosts.filter(post => 
         post.title.includes(searchQuery) || 
-        post.category.includes(searchQuery) ||
-        post.author.includes(searchQuery)
+        post.clients?.name?.includes(searchQuery) ||
+        post.status?.includes(searchQuery)
       )
     : filteredByDatePosts;
   
   // تصفية حسب المنصات
   const finalFilteredPosts = platformFilter 
-    ? searchFilteredPosts.filter(post => post.platforms.includes(platformFilter))
+    ? searchFilteredPosts.filter(post => post.platforms?.includes(platformFilter))
     : searchFilteredPosts;
   
-  // الحصول على كل التواريخ التي يوجد بها منشورات (للتلوين في التقويم)
-  const datesWithPosts = posts.map(post => parsePostDate(post.date));
-  
-  // تجميع المنشورات حسب الفئة
-  const groupedPosts = finalFilteredPosts.reduce((acc, post) => {
-    if (!acc[post.category]) {
-      acc[post.category] = [];
-    }
-    acc[post.category].push(post);
-    return acc;
-  }, {} as Record<string, typeof posts>);
+  // الحصول على كل التواريخ التي يوجد بها منشورات مجدولة
+  const datesWithPosts = posts
+    .filter(post => post.scheduled_at)
+    .map(post => new Date(post.scheduled_at!));
   
   const handleBackToHome = () => {
     navigate('/');
@@ -259,104 +97,13 @@ const CalendarPage = () => {
   };
 
   const handleAddScheduledPost = () => {
-    // Select first design as example
-    const exampleDesign = {
-      id: 1,
-      title: "إطلاق منتج جديد",
-      category: "إعلان",
-      image: "/placeholder.svg",
-      date: "2023/05/15",
-      author: "شركة الأفق الأخضر",
-      likes: 120,
-      comments: 45
-    };
-    
-    setSelectedDesign(exampleDesign);
-    setIsPublishModalOpen(true);
+    navigate('/add-post');
   };
   
   return (
-    <div className="min-h-screen flex" dir="rtl">
-      {/* Sidebar */}
-      <SidebarProvider>
-        <aside className="h-screen sticky top-0 w-64 border-l bg-white hidden md:block">
-          <div className="flex flex-col h-full">
-            <div className="p-4 border-b">
-              <h2 className="text-xl font-bold text-green-700">كانفاس التواصل</h2>
-            </div>
-            
-            <nav className="flex-1 overflow-y-auto p-4">
-              <ul className="space-y-6">
-                <li>
-                  <Button 
-                    variant="link" 
-                    className="w-full justify-start gap-2 text-gray-600 hover:text-green-700"
-                    onClick={handleBackToHome}
-                  >
-                    <Home className="h-5 w-5" />
-                    <span className="text-lg">الرئيسية</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على لوحة المنشورات")}>
-                    <LayoutGrid className="h-5 w-5" />
-                    <span className="text-lg">لوحة المنشورات</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button 
-                    variant="link" 
-                    className="w-full justify-start gap-2 text-gray-600 hover:text-green-700"
-                    onClick={() => navigate("/designs")}
-                  >
-                    <PencilRuler className="h-5 w-5" />
-                    <span className="text-lg">لوحة التصاميم</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button 
-                    variant="link" 
-                    className="w-full justify-start gap-2 text-green-700"
-                  >
-                    <CalendarIcon className="h-5 w-5" />
-                    <span className="text-lg">التقويم</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على الإحصائيات")}>
-                    <BarChart className="h-5 w-5" />
-                    <span className="text-lg">الإحصائيات</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على العملاء")}>
-                    <Users className="h-5 w-5" />
-                    <span className="text-lg">العملاء</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على الإعدادات")}>
-                    <Settings className="h-5 w-5" />
-                    <span className="text-lg">الإعدادات</span>
-                  </Button>
-                </li>
-              </ul>
-            </nav>
-            
-            <div className="p-4 border-t">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-gray-200 relative overflow-hidden">
-                    <img src="/lovable-uploads/10fc914b-5004-4050-8edd-e2273f4b215d.png" alt="Profile" className="h-full w-full object-cover" />
-                  </div>
-                </div>
-                <div className="mr-3">
-                  <p className="text-sm font-medium">أحمد محمد</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
+    <div className="min-h-screen flex w-full" dir="rtl">
+      <SidebarProvider defaultOpen={true}>
+        <AppSidebar />
         
         {/* Main content */}
         <main className="flex-1 bg-white">

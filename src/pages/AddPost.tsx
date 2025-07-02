@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, ArrowRight, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -10,16 +10,26 @@ import { useNavigate } from "react-router-dom";
 import { SocialPreview } from "@/components/social/SocialPreview";
 import { PostScheduler } from "@/components/post/PostScheduler";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePosts } from "@/hooks/usePosts";
+import { useClients } from "@/hooks/useClients";
+import { useDesigns } from "@/hooks/useDesigns";
 
 const AddPost = () => {
   const navigate = useNavigate();
+  const { addPost, loading: postsLoading } = usePosts();
+  const { clients, loading: clientsLoading } = useClients();
+  const { designs, loading: designsLoading } = useDesigns();
+  
   const [formData, setFormData] = useState({
     title: "",
-    category: "منشور",
     content: "",
-    image: "/placeholder.svg",
-    hasDesign: true,
-    status: "مسودة",
+    status: "draft",
+    client_id: "",
+    design_id: "",
+    platforms: [] as string[],
+    scheduled_at: "",
+    hasDesign: false,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -32,7 +42,7 @@ const AddPost = () => {
     setFormData(prev => ({ ...prev, [name]: checked }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
@@ -41,9 +51,22 @@ const AddPost = () => {
       return;
     }
     
-    // Submit form
-    toast.success("تم إضافة المنشور بنجاح");
-    setTimeout(() => navigate("/"), 1500);
+    // Prepare data for submission
+    const postData = {
+      title: formData.title,
+      content: formData.content || null,
+      status: formData.status,
+      client_id: formData.client_id || null,
+      design_id: formData.hasDesign && formData.design_id ? formData.design_id : null,
+      platforms: formData.platforms.length > 0 ? formData.platforms : null,
+      scheduled_at: formData.scheduled_at || null,
+      published_at: null,
+    };
+    
+    const result = await addPost(postData);
+    if (result) {
+      setTimeout(() => navigate("/"), 1500);
+    }
   };
 
   const handleCancel = () => {
@@ -91,97 +114,136 @@ const AddPost = () => {
           <TabsContent value="editor">
             <Card className="p-6">
               <form onSubmit={handleSubmit}>
-                <div className="space-y-6">
-                  <div>
-                    <label htmlFor="title" className="block text-sm font-medium mb-2">عنوان المنشور *</label>
-                    <Input 
-                      id="title" 
-                      name="title" 
-                      placeholder="أدخل عنوان المنشور" 
-                      value={formData.title}
-                      onChange={handleChange}
-                      className="text-right"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-6">
                     <div>
-                      <label htmlFor="category" className="block text-sm font-medium mb-2">الفئة *</label>
-                      <select 
-                        id="category" 
-                        name="category" 
-                        value={formData.category}
+                      <label htmlFor="title" className="block text-sm font-medium mb-2">عنوان المنشور *</label>
+                      <Input 
+                        id="title" 
+                        name="title" 
+                        placeholder="أدخل عنوان المنشور" 
+                        value={formData.title}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-md py-2 px-3 text-right"
-                      >
-                        <option value="منشور">منشور</option>
-                        <option value="مجدول">مجدول</option>
-                        <option value="مسودة">مسودة</option>
-                      </select>
+                        className="text-right"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="client_id" className="block text-sm font-medium mb-2">العميل</label>
+                        <Select value={formData.client_id} onValueChange={(value) => setFormData(prev => ({ ...prev, client_id: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="اختر العميل" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {clients.map((client) => (
+                              <SelectItem key={client.id} value={client.id}>
+                                {client.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="status" className="block text-sm font-medium mb-2">الحالة *</label>
+                        <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="draft">مسودة</SelectItem>
+                            <SelectItem value="review">قيد المراجعة</SelectItem>
+                            <SelectItem value="approved">معتمد</SelectItem>
+                            <SelectItem value="published">منشور</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     
                     <div>
-                      <label htmlFor="status" className="block text-sm font-medium mb-2">الحالة *</label>
-                      <select 
-                        id="status" 
-                        name="status" 
-                        value={formData.status}
+                      <label htmlFor="content" className="block text-sm font-medium mb-2">محتوى المنشور</label>
+                      <Textarea 
+                        id="content" 
+                        name="content" 
+                        placeholder="أدخل محتوى المنشور" 
+                        value={formData.content}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-md py-2 px-3 text-right"
-                      >
-                        <option value="مسودة">مسودة</option>
-                        <option value="قيد المراجعة">قيد المراجعة</option>
-                        <option value="معتمد">معتمد</option>
-                      </select>
+                        className="text-right min-h-[150px]"
+                      />
                     </div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="content" className="block text-sm font-medium mb-2">محتوى المنشور</label>
-                    <Textarea 
-                      id="content" 
-                      name="content" 
-                      placeholder="أدخل محتوى المنشور" 
-                      value={formData.content}
-                      onChange={handleChange}
-                      className="text-right min-h-[150px]"
-                    />
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <input 
-                      type="checkbox" 
-                      id="hasDesign" 
-                      name="hasDesign"
-                      checked={formData.hasDesign}
-                      onChange={handleCheckboxChange}
-                      className="ml-2"
-                    />
-                    <label htmlFor="hasDesign" className="text-sm">إضافة تصميم للمنشور</label>
-                  </div>
-                  
-                  {formData.hasDesign && (
+                    
+                    <div className="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        id="hasDesign" 
+                        name="hasDesign"
+                        checked={formData.hasDesign}
+                        onChange={handleCheckboxChange}
+                        className="ml-2"
+                      />
+                      <label htmlFor="hasDesign" className="text-sm">ربط تصميم بالمنشور</label>
+                    </div>
+                    
+                    {formData.hasDesign && (
+                      <div>
+                        <label htmlFor="design_id" className="block text-sm font-medium mb-2">اختر التصميم</label>
+                        <Select value={formData.design_id} onValueChange={(value) => setFormData(prev => ({ ...prev, design_id: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="اختر التصميم" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {designs.map((design) => (
+                              <SelectItem key={design.id} value={design.id}>
+                                {design.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    
                     <div>
-                      <label className="block text-sm font-medium mb-2">صورة المنشور</label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
-                        <div className="mx-auto h-32 w-32 overflow-hidden bg-gray-100">
-                          <img src={formData.image} alt="Post preview" className="h-full w-full object-cover" />
-                        </div>
-                        <div className="mt-4">
-                          <Button type="button" variant="outline" className="mx-auto" onClick={() => toast.info("سيتم فتح نافذة اختيار الصورة")}>
-                            رفع صورة
-                          </Button>
-                        </div>
+                      <label className="block text-sm font-medium mb-2">المنصات</label>
+                      <div className="flex flex-wrap gap-2">
+                        {['facebook', 'instagram', 'twitter', 'linkedin'].map((platform) => (
+                          <div key={platform} className="flex items-center">
+                            <input 
+                              type="checkbox" 
+                              id={platform}
+                              checked={formData.platforms.includes(platform)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFormData(prev => ({ ...prev, platforms: [...prev.platforms, platform] }));
+                                } else {
+                                  setFormData(prev => ({ ...prev, platforms: prev.platforms.filter(p => p !== platform) }));
+                                }
+                              }}
+                              className="ml-2"
+                            />
+                            <label htmlFor={platform} className="text-sm capitalize">{platform}</label>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  )}
+                    
+                    <div>
+                      <label htmlFor="scheduled_at" className="block text-sm font-medium mb-2">وقت النشر المجدول (اختياري)</label>
+                      <Input 
+                        id="scheduled_at" 
+                        name="scheduled_at" 
+                        type="datetime-local"
+                        value={formData.scheduled_at}
+                        onChange={handleChange}
+                        className="text-right"
+                      />
+                    </div>
                   
                   <div className="flex justify-end space-x-4 space-x-reverse">
                     <Button type="button" variant="outline" onClick={handleCancel}>
                       إلغاء
                     </Button>
-                    <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                      <span>إضافة المنشور</span>
+                    <Button type="submit" disabled={postsLoading} className="bg-green-600 hover:bg-green-700">
+                      <span>{postsLoading ? "جاري الإضافة..." : "إضافة المنشور"}</span>
                       <ArrowRight className="mr-2 h-4 w-4" />
                     </Button>
                   </div>

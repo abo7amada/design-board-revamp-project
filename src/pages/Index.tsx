@@ -8,75 +8,41 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import PostCard from "@/components/PostCard";
+import { usePosts } from "@/hooks/usePosts";
+import { useClients } from "@/hooks/useClients";
+import { useDesigns } from "@/hooks/useDesigns";
+import { AppSidebar } from "@/components/shared/AppSidebar";
 
-// بيانات افتراضية
-const posts = [
-  {
-    id: 1,
-    title: "إطلاق منتج جديد",
-    category: "منشور",
-    image: "/placeholder.svg",
-    date: "2023/5/15",
-    author: "شركة الأفق الأخضر",
-    status: "معتمد",
-    hasDesign: true
-  },
-  {
-    id: 2,
-    title: "ورشة عمل تقنية",
-    category: "مجدول",
-    image: "/placeholder.svg",
-    date: "2023/6/20",
-    author: "شركة الأفق الأخضر",
-    status: "قيد المراجعة",
-    hasDesign: true
-  },
-  {
-    id: 3,
-    title: "عرض موسم الصيف",
-    category: "مسودة",
-    image: "/placeholder.svg",
-    date: "2023/7/1",
-    author: "مؤسسة نجمة الشمال",
-    status: "مسودة",
-    hasDesign: false
-  },
-  {
-    id: 4,
-    title: "مقابلة مع المدير التنفيذي",
-    category: "مسودة",
-    image: "/placeholder.svg",
-    date: "2023/8/5",
-    author: "شركة الأفق الأخضر",
-    status: "مسودة",
-    hasDesign: false
-  }
-];
+// Remove mock data - will use real data from hooks
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   
+  const { posts, loading: postsLoading } = usePosts();
+  const { clients, loading: clientsLoading } = useClients();
+  const { designs, loading: designsLoading } = useDesigns();
+  
   // تصفية المنشورات بناءً على البحث
   const filteredPosts = posts.filter(post => 
     post.title.includes(searchQuery) || 
-    post.category.includes(searchQuery) ||
-    post.author.includes(searchQuery)
+    (post.clients?.name && post.clients.name.includes(searchQuery)) ||
+    post.status?.includes(searchQuery)
   );
 
-  // تجميع المنشورات حسب الفئة
-  const groupedPosts = filteredPosts.reduce((acc, post) => {
-    if (!acc[post.category]) {
-      acc[post.category] = [];
-    }
-    acc[post.category].push(post);
-    return acc;
-  }, {} as Record<string, typeof posts>);
+  // تجميع المنشورات حسب الحالة
+  const statusGroups = {
+    draft: filteredPosts.filter(post => post.status === 'draft').length,
+    review: filteredPosts.filter(post => post.status === 'review').length,
+    approved: filteredPosts.filter(post => post.status === 'approved').length,
+    published: filteredPosts.filter(post => post.status === 'published').length,
+  };
 
   const categories = {
-    "منشور": { count: groupedPosts["منشور"]?.length || 0, color: "bg-purple-100" },
-    "مجدول": { count: groupedPosts["مجدول"]?.length || 0, color: "bg-blue-100" },
-    "مسودة": { count: groupedPosts["مسودة"]?.length || 0, color: "bg-gray-100" }
+    "مسودة": { count: statusGroups.draft, color: "bg-gray-100" },
+    "قيد المراجعة": { count: statusGroups.review, color: "bg-yellow-100" },
+    "معتمد": { count: statusGroups.approved, color: "bg-green-100" },
+    "منشور": { count: statusGroups.published, color: "bg-blue-100" }
   };
 
   const handleAddPost = () => {
@@ -92,86 +58,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex" dir="rtl">
-      {/* Sidebar */}
-      <SidebarProvider>
-        <aside className="h-screen sticky top-0 w-64 border-l bg-white hidden md:block">
-          <div className="flex flex-col h-full">
-            <div className="p-4 border-b">
-              <h2 className="text-xl font-bold text-green-700">كانفاس التواصل</h2>
-            </div>
-            
-            <nav className="flex-1 overflow-y-auto p-4">
-              <ul className="space-y-6">
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-green-700">
-                    <Home className="h-5 w-5" />
-                    <span className="text-lg">الرئيسية</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على لوحة المنشورات")}>
-                    <LayoutGrid className="h-5 w-5" />
-                    <span className="text-lg">لوحة المنشورات</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button 
-                    variant="link" 
-                    className="w-full justify-start gap-2 text-gray-600 hover:text-green-700"
-                    onClick={handleDesignsClick}
-                  >
-                    <PencilRuler className="h-5 w-5" />
-                    <span className="text-lg">لوحة التصاميم</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button 
-                    variant="link" 
-                    className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" 
-                    onClick={handleCalendarClick}
-                  >
-                    <Calendar className="h-5 w-5" />
-                    <span className="text-lg">التقويم</span>
-                  </Button>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على الإحصائيات")}>
-                    <BarChart className="h-5 w-5" />
-                    <span className="text-lg">الإحصائيات</span>
-                  </Button>
-                </li>
-                <li>
-                  <Link to="/clients">
-                    <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700">
-                      <Users className="h-5 w-5" />
-                      <span className="text-lg">العملاء</span>
-                    </Button>
-                  </Link>
-                </li>
-                <li>
-                  <Button variant="link" className="w-full justify-start gap-2 text-gray-600 hover:text-green-700" onClick={() => toast.info("تم النقر على الإعدادات")}>
-                    <Settings className="h-5 w-5" />
-                    <span className="text-lg">الإعدادات</span>
-                  </Button>
-                </li>
-              </ul>
-            </nav>
-            
-            <div className="p-4 border-t">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-gray-200 relative overflow-hidden">
-                    <img src="/lovable-uploads/10fc914b-5004-4050-8edd-e2273f4b215d.png" alt="Profile" className="h-full w-full object-cover" />
-                  </div>
-                </div>
-                <div className="mr-3">
-                  <p className="text-sm font-medium">أحمد محمد</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
+    <div className="min-h-screen flex w-full" dir="rtl">
+      <SidebarProvider defaultOpen={true}>
+        <AppSidebar />
         
         {/* Main content */}
         <main className="flex-1 bg-white">
@@ -235,8 +124,9 @@ const Index = () => {
                     onChange={() => toast.info("تم تغيير تصفية العملاء")}
                   >
                     <option>كل العملاء</option>
-                    <option>شركة الأفق الأخضر</option>
-                    <option>مؤسسة نجمة الشمال</option>
+                    {clients.map(client => (
+                      <option key={client.id} value={client.id}>{client.name}</option>
+                    ))}
                   </select>
                   
                   <select 
@@ -244,14 +134,15 @@ const Index = () => {
                     onChange={() => toast.info("تم تغيير تصفية الحالة")}
                   >
                     <option>جميع الحالات</option>
-                    <option>معتمد</option>
-                    <option>قيد المراجعة</option>
-                    <option>مسودة</option>
+                    <option value="approved">معتمد</option>
+                    <option value="review">قيد المراجعة</option>
+                    <option value="draft">مسودة</option>
+                    <option value="published">منشور</option>
                   </select>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {Object.entries(categories).map(([category, details]) => (
                   <Card 
                     key={category} 
@@ -259,7 +150,7 @@ const Index = () => {
                     onClick={() => toast.info(`تم النقر على فئة: ${category}`)}
                   >
                     <div className="p-5 flex justify-between items-center">
-                      <div className="rounded-md px-2 py-1 bg-opacity-80" style={{ backgroundColor: category === "منشور" ? "#b083f8" : category === "مجدول" ? "#4e97f7" : "#6b7280" }}>
+                      <div className="rounded-md px-2 py-1 bg-opacity-80" style={{ backgroundColor: category === "منشور" ? "#3b82f6" : category === "معتمد" ? "#22c55e" : category === "قيد المراجعة" ? "#eab308" : "#6b7280" }}>
                         <span className="text-white font-medium text-sm">{details.count}</span>
                       </div>
                       <h3 className="text-xl font-bold">{category}</h3>
@@ -270,15 +161,17 @@ const Index = () => {
             </div>
             
             <div className="space-y-6">
-              {Object.entries(groupedPosts).map(([category, posts]) => (
-                <div key={category} className="space-y-4">
-                  {posts.map(post => (
+              {postsLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">جاري تحميل المنشورات...</p>
+                </div>
+              ) : filteredPosts.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredPosts.map(post => (
                     <PostCard key={post.id} post={post} />
                   ))}
                 </div>
-              ))}
-              
-              {filteredPosts.length === 0 && (
+              ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500">لا توجد منشورات متطابقة مع معايير البحث</p>
                 </div>

@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart as ReBarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { AppSidebar } from "@/components/shared/AppSidebar";
+import { usePosts } from "@/hooks/usePosts";
+import { useClients } from "@/hooks/useClients";
+import { useDesigns } from "@/hooks/useDesigns";
 
 // بيانات وهمية للإحصائيات
 const monthlyPostData = [
@@ -43,6 +46,74 @@ const clientActivityData = [
 const Statistics = () => {
   const [dateRange, setDateRange] = useState("year");
   const [activeTab, setActiveTab] = useState("overview");
+  
+  const { posts, loading: postsLoading } = usePosts();
+  const { clients, loading: clientsLoading } = useClients();
+  const { designs, loading: designsLoading } = useDesigns();
+  
+  // Calculate real statistics
+  const statsData = {
+    totalPosts: posts.length,
+    totalDesigns: designs.length,
+    activeClients: clients.filter(c => c.status === 'active').length,
+    completionRate: posts.length > 0 ? Math.round((posts.filter(p => p.status === 'published').length / posts.length) * 100) : 0,
+  };
+  
+  // Generate monthly post data from real posts
+  const getMonthlyData = () => {
+    const monthlyStats: { [key: string]: number } = {};
+    const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+    
+    months.forEach(month => monthlyStats[month] = 0);
+    
+    posts.forEach(post => {
+      const date = new Date(post.created_at);
+      const monthName = months[date.getMonth()];
+      monthlyStats[monthName]++;
+    });
+    
+    return months.map(month => ({
+      month,
+      count: monthlyStats[month]
+    }));
+  };
+  
+  // Generate category data from real posts
+  const getCategoryData = () => {
+    const statusCounts = posts.reduce((acc, post) => {
+      const status = post.status || 'draft';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+    
+    return [
+      { name: "مسودة", value: statusCounts.draft || 0, color: "#6b7280" },
+      { name: "قيد المراجعة", value: statusCounts.review || 0, color: "#eab308" },
+      { name: "معتمد", value: statusCounts.approved || 0, color: "#22c55e" },
+      { name: "منشور", value: statusCounts.published || 0, color: "#3b82f6" },
+    ];
+  };
+  
+  // Generate client activity data
+  const getClientActivityData = () => {
+    const clientStats = clients.map(client => {
+      const clientPosts = posts.filter(post => post.client_id === client.id);
+      const clientDesigns = designs.filter(design => design.client_id === client.id);
+      
+      return {
+        name: client.name,
+        posts: clientPosts.length,
+        designs: clientDesigns.length,
+        tasks: clientPosts.filter(p => p.status === 'approved').length
+      };
+    });
+    
+    return clientStats.slice(0, 4); // Show top 4 clients
+  };
+  
+  const monthlyPostData = getMonthlyData();
+  const categoryData = getCategoryData();
+  const clientActivityData = getClientActivityData();
 
   return (
     <div className="min-h-screen flex w-full" dir="rtl">
@@ -116,10 +187,10 @@ const Statistics = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm text-muted-foreground">إجمالي المنشورات</p>
-                        <h3 className="text-2xl font-bold mt-1">45</h3>
+                        <h3 className="text-2xl font-bold mt-1">{statsData.totalPosts}</h3>
                         <div className="flex items-center mt-1 text-green-600 text-sm">
                           <ArrowUp className="h-4 w-4 mr-1" /> 
-                          <span>12% زيادة</span>
+                          <span>منشور جديد</span>
                         </div>
                       </div>
                       <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -134,10 +205,10 @@ const Statistics = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm text-muted-foreground">إجمالي التصاميم</p>
-                        <h3 className="text-2xl font-bold mt-1">32</h3>
+                        <h3 className="text-2xl font-bold mt-1">{statsData.totalDesigns}</h3>
                         <div className="flex items-center mt-1 text-green-600 text-sm">
                           <ArrowUp className="h-4 w-4 mr-1" /> 
-                          <span>8% زيادة</span>
+                          <span>تصميم جديد</span>
                         </div>
                       </div>
                       <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -152,10 +223,10 @@ const Statistics = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm text-muted-foreground">العملاء النشطين</p>
-                        <h3 className="text-2xl font-bold mt-1">15</h3>
+                        <h3 className="text-2xl font-bold mt-1">{statsData.activeClients}</h3>
                         <div className="flex items-center mt-1 text-green-600 text-sm">
                           <ArrowUp className="h-4 w-4 mr-1" /> 
-                          <span>3 عملاء جدد</span>
+                          <span>عميل نشط</span>
                         </div>
                       </div>
                       <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -170,10 +241,10 @@ const Statistics = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm text-muted-foreground">معدل الإنجاز</p>
-                        <h3 className="text-2xl font-bold mt-1">92%</h3>
-                        <div className="flex items-center mt-1 text-red-600 text-sm">
-                          <ArrowDown className="h-4 w-4 mr-1" /> 
-                          <span>3% انخفاض</span>
+                        <h3 className="text-2xl font-bold mt-1">{statsData.completionRate}%</h3>
+                        <div className="flex items-center mt-1 text-green-600 text-sm">
+                          <ArrowUp className="h-4 w-4 mr-1" /> 
+                          <span>معدل إنجاز</span>
                         </div>
                       </div>
                       <div className="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
