@@ -17,6 +17,9 @@ import Chat from "./pages/Chat";
 import SocialIntegrations from "./pages/SocialIntegrations";
 import NotFound from "./pages/NotFound";
 import DesignDetails from "./pages/DesignDetails";
+import Auth from "./pages/Auth";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { StrictMode } from "react";
 
 // إنشاء مثيل جديد من QueryClient
@@ -33,33 +36,36 @@ const App = () => {
   return (
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <TooltipProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/designs" element={<Designs />} />
-              <Route path="/design-details/:id" element={<DesignDetails />} />
-              <Route path="/add-design" element={<AddDesign />} />
-              <Route path="/add-post" element={<AddPost />} />
-              <Route path="/add-client" element={<AddClient />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/statistics" element={<Statistics />} />
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/clients/:clientId" element={<Clients />} />
-              <Route path="/clients/:clientId/designs" element={<Clients />} />
-              <Route path="/clients/:clientId/posts" element={<Clients />} />
-              <Route path="/clients/:clientId/calendar" element={<Clients />} />
-              <Route path="/clients/:clientId/statistics" element={<Clients />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/social-integrations" element={<SocialIntegrations />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster />
-            <Sonner />
-          </TooltipProvider>
-        </BrowserRouter>
+        <AuthProvider>
+          <BrowserRouter>
+            <TooltipProvider>
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/designs" element={<ProtectedRoute><Designs /></ProtectedRoute>} />
+                <Route path="/design-details/:id" element={<ProtectedRoute><DesignDetails /></ProtectedRoute>} />
+                <Route path="/add-design" element={<ProtectedRoute><AddDesign /></ProtectedRoute>} />
+                <Route path="/add-post" element={<ProtectedRoute><AddPost /></ProtectedRoute>} />
+                <Route path="/add-client" element={<ProtectedRoute><AddClient /></ProtectedRoute>} />
+                <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+                <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
+                <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                <Route path="/clients/:clientId" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                <Route path="/clients/:clientId/designs" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                <Route path="/clients/:clientId/posts" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                <Route path="/clients/:clientId/calendar" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                <Route path="/clients/:clientId/statistics" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+                <Route path="/social-integrations" element={<ProtectedRoute><SocialIntegrations /></ProtectedRoute>} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <Toaster />
+              <Sonner />
+            </TooltipProvider>
+          </BrowserRouter>
+        </AuthProvider>
       </QueryClientProvider>
     </StrictMode>
   );

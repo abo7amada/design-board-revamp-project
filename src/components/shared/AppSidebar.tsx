@@ -1,11 +1,13 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { BarChart, Calendar, Home, Settings, Users } from "lucide-react";
+import { BarChart, Calendar, Home, Settings, Users, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const AppSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signOut, user } = useAuth();
 
   // دالة للتنقل بين الصفحات
   const handleNavigation = (path: string) => {
@@ -16,6 +18,12 @@ export const AppSidebar = () => {
   // التحقق من المسار الحالي لتمييز الزر النشط
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  // دالة تسجيل الخروج
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
   };
 
   return (
@@ -80,7 +88,7 @@ export const AppSidebar = () => {
           </ul>
         </nav>
         
-        <div className="p-4 border-t">
+        <div className="p-4 border-t space-y-2">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="h-10 w-10 rounded-full bg-gray-200 relative overflow-hidden">
@@ -88,9 +96,19 @@ export const AppSidebar = () => {
               </div>
             </div>
             <div className="mr-3">
-              <p className="text-sm font-medium">أحمد محمد</p>
+              <p className="text-sm font-medium">{user?.user_metadata?.full_name || 'مستخدم'}</p>
+              <p className="text-xs text-gray-500">{user?.email}</p>
             </div>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full justify-start gap-2 text-gray-600 hover:text-red-600"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4" />
+            <span>تسجيل الخروج</span>
+          </Button>
         </div>
       </div>
     </aside>
