@@ -89,33 +89,42 @@ export const useSocialMedia = () => {
     }
   };
 
-  // Connect a social media account (placeholder for OAuth flow)
+  // Connect a social media account using OAuth flow
   const connectAccount = async (platform: string) => {
-    toast.info(`جاري ربط حساب ${platform}...`);
-    
-    // This would typically initiate OAuth flow
-    // For now, we'll simulate a connected account
+    if (!user) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
     try {
-      const mockAccount = {
-        user_id: user?.id,
-        platform,
-        platform_user_id: `mock_${platform}_${Date.now()}`,
-        platform_username: `user_${platform}`,
-        access_token: 'mock_token',
-        account_name: `حساب ${platform}`,
-        account_type: 'personal' as const
+      // Open OAuth popup for the specific platform
+      const authUrl = `https://pzlkvdwctlfqgpfvwiot.supabase.co/functions/v1/${platform}-oauth`;
+      const popup = window.open(
+        authUrl,
+        `${platform}-oauth`,
+        'width=600,height=600,scrollbars=yes,resizable=yes'
+      );
+
+      // Listen for OAuth completion
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data?.success && event.data?.platform === platform) {
+          window.removeEventListener('message', handleMessage);
+          popup?.close();
+          toast.success(`تم ربط حساب ${platform} بنجاح`);
+          fetchSocialAccounts(); // Refresh the accounts list
+        }
       };
 
-      const { data, error } = await supabase
-        .from('social_accounts')
-        .insert([mockAccount])
-        .select()
-        .single();
+      window.addEventListener('message', handleMessage);
 
-      if (error) throw error;
-      
-      setSocialAccounts(prev => [...prev, data as SocialAccount]);
-      toast.success(`تم ربط حساب ${platform} بنجاح`);
+      // Check if popup was closed without completing OAuth
+      const checkClosed = setInterval(() => {
+        if (popup?.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+        }
+      }, 1000);
+
     } catch (error) {
       console.error('Error connecting account:', error);
       toast.error(`خطأ في ربط حساب ${platform}`);
@@ -141,7 +150,7 @@ export const useSocialMedia = () => {
   };
 
   // Publish a post to social media platforms
-  const publishPost = async (postId: string, selectedAccounts: string[]) => {
+  const publishPost = async (postId: string, selectedAccounts: string[], content: string, imageUrl?: string) => {
     if (!selectedAccounts.length) {
       toast.error('يرجى اختيار حساب واحد على الأقل للنشر');
       return;
@@ -164,10 +173,34 @@ export const useSocialMedia = () => {
 
       if (error) throw error;
 
-      // TODO: Implement actual publishing logic here
-      // This would call the respective platform APIs
-      
-      toast.success('تم بدء عملية النشر بنجاح');
+      // Publish to each selected account
+      const publishPromises = selectedAccounts.map(async (accountId) => {
+        const account = socialAccounts.find(acc => acc.id === accountId);
+        if (!account) return;
+
+        try {
+          const response = await supabase.functions.invoke(`publish-to-${account.platform}`, {
+            body: {
+              postId,
+              accountId,
+              message: content,
+              imageUrl
+            }
+          });
+
+          if (response.error) {
+            console.error(`Error publishing to ${account.platform}:`, response.error);
+            toast.error(`خطأ في النشر على ${account.platform}`);
+          } else {
+            toast.success(`تم النشر بنجاح على ${account.platform}`);
+          }
+        } catch (error) {
+          console.error(`Error publishing to ${account.platform}:`, error);
+          toast.error(`خطأ في النشر على ${account.platform}`);
+        }
+      });
+
+      await Promise.all(publishPromises);
       fetchPublishingHistory();
     } catch (error) {
       console.error('Error publishing post:', error);
