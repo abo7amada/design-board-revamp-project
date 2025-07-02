@@ -19,7 +19,7 @@ const DesignDetails = () => {
   
   // استخدام بيانات التصميم من الحالة أو البحث عنها في البيانات
   const designFromState = location.state?.design as Design;
-  const designFromData = designsData.find(d => d.id === parseInt(id || "0"));
+  const designFromData = designsData.find(d => d.id === id);
   const design = designFromState || designFromData;
   
   useEffect(() => {
